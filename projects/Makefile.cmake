@@ -37,7 +37,6 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch
 
 # DUMMY
 install/$(arch)/$(cmake_)/._.install: $(installroot)/$(arch)/$(cmaketoolchain)
-	touch $@
 
 # ENTRY
 cmakeenv: $(installroot)/$(arch)/$(cmaketoolchain)
@@ -46,6 +45,7 @@ cmakeenv: $(installroot)/$(arch)/$(cmaketoolchain)
 		-e 's#%VER%#5.$(sys_rel)#g' \
 		-e 's#%ARCH%#$(arch)#g' \
 		-e 's#%TARGET%#$(target)#g' \
+		-e 's#%PREFIX%#$(prefix)#g' \
 		> $<
 
 	@echo $@ done
