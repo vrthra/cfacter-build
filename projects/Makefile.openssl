@@ -1,4 +1,4 @@
-openssl_ver=1.0.0m
+openssl_ver=1.0.0n
 openssl_=openssl-$(openssl_ver)
 projects+=$(openssl_)
 names+=openssl
