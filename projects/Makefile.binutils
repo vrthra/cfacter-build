@@ -7,6 +7,10 @@ $(eval $(call standard_x,$(binutils_)))
 
 # config rules for binutils
 build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch
+	export PATH=$(installroot)/i386/bin:$$PATH ; \
+	echo $$PATH ; \
+	export CC=$(installroot)/i386/bin/i386-pc-solaris2.11-gcc ; \
+	export CXX=$(installroot)/i386/bin/i386-pc-solaris2.11-g++ ; \
 	(cd $(@D) && $(rootdir)/source/$(binutils_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \

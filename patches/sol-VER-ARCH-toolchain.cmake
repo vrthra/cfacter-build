@@ -5,7 +5,7 @@ SET(CMAKE_SYSTEM_VERSION %VER%)
 SET(CMAKE_SYSTEM_PROCESSOR %ARCH%)
 
 # specify the cross compiler
-SET(PL_TOOLS_ROOT /opt/pl-build-tools/${CMAKE_SYSTEM_PROCESSOR})
+SET(PL_TOOLS_ROOT        %PREFIX%/${CMAKE_SYSTEM_PROCESSOR})
 SET(CMAKE_C_COMPILER     ${PL_TOOLS_ROOT}/bin/%TARGET%-gcc)
 SET(CMAKE_CXX_COMPILER   ${PL_TOOLS_ROOT}/bin/%TARGET%-g++)
 SET(CMAKE_AR             ${PL_TOOLS_ROOT}/%TARGET%/bin/ar CACHE FILEPATH "Archiver")
@@ -43,3 +43,7 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# We need to set CMAKE_AR, because this var doesn't get populated when cross-compiling
+# This mostly is needed for building cfacter
+SET(CMAKE_AR ${PL_TOOLS_ROOT}/bin/ar CACHE FILEPATH "Archiver")
