@@ -43,7 +43,3 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# We need to set CMAKE_AR, because this var doesn't get populated when cross-compiling
-# This mostly is needed for building cfacter
-SET(CMAKE_AR ${PL_TOOLS_ROOT}/bin/ar CACHE FILEPATH "Archiver")
