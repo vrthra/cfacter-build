@@ -35,13 +35,13 @@ binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
 boost_ver=1_55_0
-yaml_ver=0.5.1
+yamlcpp_ver=0.5.1
 # -----------------------------------------------------------------------------
 # These are the projects we are currently building. Where possible, try to
 # follow the $project-$ver format, if not, use the boost example.
 
-myprojects=binutils gcc cmake
-myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver)
+myprojects=binutils gcc cmake yaml-cpp
+myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver) $(yamlcpp_ver)
 projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
 # -----------------------------------------------------------------------------
 #  These are arch dependent definitions for native and cross compilers.
@@ -113,6 +113,7 @@ wget=wget -q -c --no-check-certificate
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
+cmake=$(installroot)/gcc-i386/bin/cmake
 # -----------------------------------------------------------------------------
 # $mydirs, and the make rule make sure that our directories are created before
 # they are needed. To make use of this, add the directory here, and in the
@@ -143,6 +144,7 @@ path=$(prefix)/bin \
 
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
+export BOOST_ROOT:=/opt/pl-build/boost_$(boost_ver)
 # -----------------------------------------------------------------------------
 
 # ENTRY
@@ -291,7 +293,7 @@ source/boost_$(boost_ver)/._.checkout: | build/$(arch)/boost_$(boost_ver) source
 	cat source/boost_$(boost_ver).tar.bz2 | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-install/._.boost_$(boost_ver)-hinstall: source/boost_$(boost_ver)/._.checkout $(installroot)
+install/._.boost_$(boost_ver)-hinstall: source/boost_$(boost_ver)/._.checkout | $(installroot)
 	cat source/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
@@ -311,8 +313,25 @@ install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/
 	touch $@
 
 # ENTRY
-boost: | build/$(arch)/boost_$(boost_ver)/._.make
+boost: | install/$(arch)/boost_$(boost_ver)/._.install
 	@echo $@ done
+
+source/yaml-cpp-$(yamlcpp_ver).tar.bz2: | source
+	$(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
+
+#source/yaml-cpp-$(yamlcpp_ver)/._.checkout: | build/$(arch)/yaml-cpp-$(yamlcpp_ver) source/yaml-cpp-$(yamlcpp_ver).tar.gz
+#	cat source/yaml-cpp-$(yamlcpp_ver).tar.gz | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
+#	touch $@
+
+build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config: | source/yaml-cpp-$(yamlcpp_ver)/._.patch ./build/i386/yaml-cpp-$(yamlcpp_ver)
+	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && \
+		$(cmake) -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) ../../../source/yaml-cpp-$(yamlcpp_ver)
+
+#build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.make: | build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config
+#	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && $(gmake)
+
+# ENTRY
+yaml-cpp:| install/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.install
 
 # ENTRY
 # We use the native cmake to build our cross-compiler, which unfortunately
@@ -358,7 +377,7 @@ uninstall: clobber
 
 cfacter: cfacter-$(arch)
 
-deps: boost
+deps: boost yaml-cpp
 	@echo $@ done
 
 cfacter-sparc:
