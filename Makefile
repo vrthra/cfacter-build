@@ -296,7 +296,7 @@ source/boost_$(boost_ver)/._.checkout: | build/$(arch)/boost_$(boost_ver) source
 	cat source/boost_$(boost_ver).tar.bz2 | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-install/._.boost_$(boost_ver)-hinstall: source/boost_$(boost_ver)/._.checkout | $(installroot)
+install/._.boost_$(boost_ver)-hinstall: source/boost_$(boost_ver)/._.checkout | $(installroot) install
 	cat source/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
@@ -305,7 +305,7 @@ build/$(arch)/boost_$(boost_ver)/._.config: source/boost_$(boost_ver)/._.checkou
 	touch $@
 
 install/$(arch)/boost_$(boost_ver)/._.b2install: source/boost_$(boost_ver)/._.checkout install/$(arch)/boost_$(boost_ver)
-	cd source/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(prefix) toolset=gcc
+	cd source/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(installroot)/boost_$(boost_ver) toolset=gcc
 	touch $@
 
 build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config install/$(arch)/boost_$(boost_ver)/._.b2install
@@ -328,7 +328,11 @@ source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
 
 build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config: | source/yaml-cpp-$(yamlcpp_ver)/._.patch ./build/i386/yaml-cpp-$(yamlcpp_ver)
 	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && \
-		$(cmake) -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) ../../../source/yaml-cpp-$(yamlcpp_ver)
+	$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(installroot)/gcc-$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
+	         -DCMAKE_VERBOSE_MAKEFILE=ON \
+	         -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) \
+	         -DBUILD_SHARED_LIBS=ON \
+	         -DYAML_CPP_BUILD_TOOLS=0 ../../../source/yaml-cpp-$(yamlcpp_ver)
 
 #build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.make: | build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config
 #	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && $(gmake)
