@@ -110,6 +110,7 @@ bzip2=/bin/bzip2
 patch=/bin/gpatch
 rsync=/bin/rsync
 wget=wget -q -c --no-check-certificate
+git=git
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
@@ -124,7 +125,8 @@ cmake=$(installroot)/gcc-i386/bin/cmake
 sysdirs=$(installroot)/gcc-$(arch)/sysroot
 mydirs=source build install $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
-			 source/$(arch)/root $(sysdirs) 
+			 source/$(arch)/root $(sysdirs) \
+			 source/cfacter build/$(arch)/cfacter
 $(mydirs): ; mkdir -p $@
 # -----------------------------------------------------------------------------
 # some trickery to use array path elements
@@ -145,6 +147,7 @@ path=$(prefix)/bin \
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
 export BOOST_ROOT:=/opt/pl-build/boost_$(boost_ver)
+export YAMLCPP_ROOT=/opt/pl-build
 # -----------------------------------------------------------------------------
 
 # ENTRY
@@ -364,6 +367,20 @@ install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
 
 toolchain: install-toolchain-$(arch)
 
+source/cfacter/.git: | source source/cfacter
+	$(git) clone git@github.com:puppetlabs/cfacter.git source/cfacter/
+
+
+build/$(arch)/cfacter/._.config: | source/cfacter/.git build/$(arch)/cfacter
+	cd build/$(arch)/cfacter && $(cmake) ../../../source/cfacter
+
+#build/$(arch)/cfacter/._.make: build/$(arch)/cfacter/._.config
+#	cd build/$(arch)/cfacter && $(gmake)
+
+facter-i386: | build/$(arch)/cfacter/._.make
+
+facter: facter-$(arch) 
+
 # ENTRY
 uninstall: clobber
 	rm -f install/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  install/$(arch)/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
@@ -389,5 +406,6 @@ cfacter-sparc:
 cfacter-i386:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=i386 deps
+	$(MAKE) arch=i386 facter
 
 
