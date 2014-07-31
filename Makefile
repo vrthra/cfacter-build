@@ -299,11 +299,11 @@ build/$(arch)/boost_$(boost_ver)/._.config: source/boost_$(boost_ver)/._.checkou
 	cd source/boost_$(boost_ver)/tools/build/v2 && ./bootstrap.sh --with-toolset=gcc
 	touch $@
 
-install/boost_$(boost_ver)/._.b2install: source/boost_$(boost_ver)/._.checkout
+install/$(arch)/boost_$(boost_ver)/._.b2install: source/boost_$(boost_ver)/._.checkout install/$(arch)/boost_$(boost_ver)
 	cd source/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(prefix) toolset=gcc
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.make: install/$(arch)/boost_$(boost_ver)/._.config source/boost_$(boost_ver)/._.b2install
+build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config install/$(arch)/boost_$(boost_ver)/._.b2install
 	cd source/boost_$(boost_ver)/ && $(prefix)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) toolset=gcc stage
 	touch $@
 
@@ -358,6 +358,9 @@ uninstall: clobber
 
 cfacter: cfacter-$(arch)
 
+deps: boost
+	@echo $@ done
+
 cfacter-sparc:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=i386 cmakeenv
@@ -366,5 +369,6 @@ cfacter-sparc:
 
 cfacter-i386:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
+	$(MAKE) arch=i386 deps
 
 
