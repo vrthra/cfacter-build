@@ -318,26 +318,26 @@ boost: | build/$(arch)/boost_$(boost_ver)/._.make
 # We use the native cmake to build our cross-compiler, which unfortunately
 # means that we have to build the native toolchain aswell
 make-toolchain-sparc:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
-	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compilers.tar.gz
-	(cd /opt/ && $(tar) -cf - pl-build/gcc-sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compilers.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/gcc-sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
 	(cd /opt/ && $(tar) -cf - pl-build ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-i386-compilers.tar.gz
 	@echo $@ done
 
 # ENTRY
 make-toolchain-i386:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
-	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compilers.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
 	@echo $@ done
 
-source/sol-$(sys_rel)-$(arch)-compilers.tar.gz: | source
-	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compilers.tar.gz
+source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
+	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 
-fetch-toolchain-i386: | source/sol-$(sys_rel)-i386-compilers.tar.gz
-	cat source/sol-$(sys_rel)-i386-compilers.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+fetch-toolchain-i386: | source/sol-$(sys_rel)-i386-compiler.tar.gz
+	cat source/sol-$(sys_rel)-i386-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo done $@
 
-fetch-toolchain-sparc: | source/sol-$(sys_rel)-sparc-compilers.tar.gz
-	cat source/sol-$(sys_rel)-i386-compilers.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
-	cat source/sol-$(sys_rel)-sparc-compilers.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+fetch-toolchain-sparc: | source/sol-$(sys_rel)-sparc-compiler.tar.gz
+	cat source/sol-$(sys_rel)-i386-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+	cat source/sol-$(sys_rel)-sparc-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo done $@
 
 install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
