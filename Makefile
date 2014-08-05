@@ -14,7 +14,7 @@ projects=$(join $(addsuffix -,$(myprojects)),$(myversions))
 builds=$(addprefix build/$(arch)/,$(projects))
 source=$(addprefix source/,$(projects))
 
-mydirs=build/$(arch) source
+mydirs=build/$(arch) source $(builds)
 
 make_=$(addsuffix /._.make,$(builds))
 get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
@@ -60,8 +60,7 @@ source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
 	touch $@
 
 
-build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_ver)/._.patch
-	rm -rf ./build/$(arch)/binutils-$(binutils_ver); mkdir -p ./build/$(arch)/binutils-$(binutils_ver)
+build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_ver)/._.patch ./build/$(arch)/binutils-$(binutils_ver)
 	@PATH=$(PATH); cd ./build/$(arch)/binutils-$(binutils_ver) && \
 		../../../source/binutils-$(binutils_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
@@ -69,8 +68,7 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
 
-build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch
-	rm -rf ./build/$(arch)/gcc-$(gcc_ver); mkdir -p ./build/$(arch)/gcc-$(gcc_ver)
+build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
 	@PATH=$(PATH); cd ./build/$(arch)/gcc-$(gcc_ver) && \
 		../../../source/gcc-$(gcc_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
@@ -79,11 +77,9 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch
 			-v > .x.config.log
 	touch $@
 
-
 build/$(arch)/cmake-$(cmake_ver)/._.config: build/$(arch)/gcc-$(gcc_ver)/._.install
 
-build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch
-	rm -rf ./build/$(arch)/cmake-$(cmake_ver); mkdir -p ./build/$(arch)/cmake-$(cmake_ver)
+build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-$(cmake_ver)
 	@PATH=$(PATH); cd ./build/$(arch)/cmake-$(cmake_ver) && \
 		env CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
 			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose > .x.config.log
