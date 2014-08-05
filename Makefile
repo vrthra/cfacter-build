@@ -27,13 +27,10 @@
 # =============================================================================
 #  The general variables that may be modified from the environment. The most
 #  important is the arch changes whether a native compiler or a cross-compiler
-#  is built. Second most important is the sys_rel which decides whether
-#  we are building solaris 10 or solaris 11. Note that if we set sys_rel
-#  to 11 on a solaris 10 machine, gcc generates a cross compiler,
-#  (and v.v. for s11).
+#  is built.
+
 
 arch=i386
-sys_rel:=$(subst 5.,,$(shell uname -r))
 binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
@@ -67,7 +64,12 @@ endif
 # The URL from where we get most of our sources.
 sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
 # -----------------------------------------------------------------------------
-#  A few internal definitions.
+#  A few internal definitions. sys_rel decides whether
+#  we are building solaris 10 or solaris 11. Note that if we set sys_rel
+#  to 11 on a solaris 10 machine, gcc generates a cross compiler,
+#  (and v.v. for s11).
+
+sys_rel:=$(subst 5.,,$(shell uname -r))
 solaris_version=2.$(sys_rel)
 
 # The source/ directory ideally should not contain arch dependent files since
