@@ -1,4 +1,5 @@
-solaris_version=2.10
+solaris_ver=10
+solaris_version=2.$(solaris_ver)
 binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
@@ -11,7 +12,8 @@ prefix=/opt/gcc-$(arch)
 ifeq (sparc,${arch})
 	target=sparc-sun-solaris$(solaris_version)
 	sysroot=--with-sysroot=$(prefix)/sysroot
-else
+endif
+ifeq (i386,${arch})
 	target=i386-pc-solaris$(solaris_version)
 	sysroot=
 endif
@@ -23,12 +25,13 @@ projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
 builds=$(addprefix build/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
 
-sysdirs=/opt/gcc-$(arch)/sysroot
+sysdirs=/opt/gcc-$(arch)/sysroot /usr/local
 
-mydirs=build/$(arch) source $(builds) source/sparc/root $(sysdirs)
+mydirs=build/$(arch) source $(source) $(builds) source/$(arch) source/$(arch)/root $(sysdirs)
 
 make_=$(addsuffix /._.make,$(builds))
 get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
+toolchain_=$(addsuffix ._.toolchain, source/$(arch)/)
 patch_=$(addsuffix /._.patch,$(builds))
 config_=$(addsuffix /._.config,$(builds))
 checkout_=$(addsuffix /._.checkout,$(builds))
@@ -36,14 +39,16 @@ checkout_=$(addsuffix /._.checkout,$(builds))
 ar=/usr/ccs/bin/ar
 tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
+bzip2=/bin/bzip2
 patch=/bin/gpatch
+rsync=/bin/rsync
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
 
 export PATH:=$(prefix)/bin:$(prefix)/$(target)/bin:/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin:/usr/perl5/5.8.4/bin
 
-.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_)
+.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_) $(toolchain_)
 
 $(mydirs): ; mkdir -p $@
 
@@ -127,6 +132,13 @@ build/$(arch)/%/._.install: | build/$(arch)/%/._.make
 	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
 	touch $@
 
+%-toolchain: | source/%/._.toolchain source/%
+	@echo $@ done
+
+source/%/._.toolchain: | source/sol-$(solaris_ver)-%-toolchain.cmake /opt/gcc-%/
+	cp source/sol-$(solaris_ver)-$*-toolchain.cmake /opt/gcc-$*/
+	touch $@
+
 clean:
 	rm -rf build/$(arch)
 
@@ -135,9 +147,36 @@ clobber:
 
 prepare:
 	rm -rf /opt/gcc-sparc /opt/gcc-i386
-	mkdir -p /opt/gcc-sparc /opt/gcc-i386
-	chmod 777 /opt/gcc-sparc /opt/gcc-i386
+	mkdir -p /opt/gcc-sparc /opt/gcc-i386 /usr/local
+	chmod 777 /opt/gcc-sparc /opt/gcc-i386 /usr/local
+
+source/boost_$(boost_ver).tar.bz2: | source
+	wget -q -c -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
+
+source/boost_$(boost_ver)/._.checkout: | build/$(arch)/boost_$(boost_ver) source/boost_$(boost_ver).tar.bz2
+	cat source/boost_$(boost_ver).tar.bz2 | (cd source/ && $(bzip2) -dc | $(tar) -xpf - )
+	touch $@
+
+source/boost_$(boost_ver)/._.hinstall: source/boost_$(boost_ver)/._.checkout /usr/local
+	cat source/boost_$(boost_ver).tar.bz2 | (cd /usr/local/ && $(bzip2) -dc | $(tar) -xpf - )
+	touch $@
+
+build/$(arch)/boost_$(boost_ver)/._.config: source/boost_$(boost_ver)/._.checkout build/$(arch) source/boost_$(boost_ver)/._.hinstall
+	cd source/boost_$(boost_ver)/tools/build/v2 && ./bootstrap.sh --with-toolset=gcc
+	touch $@
+
+source/boost_$(boost_ver)/._.b2install: source/boost_$(boost_ver)/._.checkout
+	cd source/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(prefix) toolset=gcc
+	touch $@
+
+build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config source/boost_$(boost_ver)/._.b2install
+	cd source/boost_$(boost_ver)/ && $(prefix)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) toolset=gcc stage
+	touch $@
+
+build/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make
+	touch $@
 
 boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
 
+cfacter: boost $(arch)-toolchain
