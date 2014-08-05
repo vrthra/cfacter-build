@@ -8,7 +8,7 @@
 #
 # ./
 # ./source
-# ./source/${arch:sparc,i386}/root          -- contains sysroot headers
+# ./source/${arch:sparc,i386}.sysroot.tar.gz        -- contains sysroot headers
 # ./source/<patches>
 # ./source/$project_$version.tar.gz
 # ./source/$project_$version/								-- generated from tar.gz
@@ -35,13 +35,13 @@ binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
 boost_ver=1_55_0
-yaml_ver=0.5.1
+yamlcpp_ver=0.5.1
 # -----------------------------------------------------------------------------
 # These are the projects we are currently building. Where possible, try to
 # follow the $project-$ver format, if not, use the boost example.
 
-myprojects=binutils gcc cmake
-myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver)
+myprojects=binutils gcc cmake yaml-cpp
+myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver) $(yamlcpp_ver)
 projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
 # -----------------------------------------------------------------------------
 #  These are arch dependent definitions for native and cross compilers.
@@ -51,18 +51,22 @@ projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
 #  Similarly, add `include Makefile.$(sys_rel)`
 #  and `include Makefile.$(arch).$(sys_rel)` if necessary.
 
-prefix=/opt/gcc-$(arch)
+define mytarget
+$(if $(findstring sparc,$(1)),sparc-sun-solaris,i386-pc-solaris)$(solaris_version)
+endef
+
+installroot=/opt/pl-build
+prefix=$(installroot)/gcc-$(arch)
+target=$(call mytarget,$(arch))
 ifeq (sparc,${arch})
-	target=sparc-sun-solaris$(solaris_version)
 	sysroot=--with-sysroot=$(prefix)/sysroot
-endif
-ifeq (i386,${arch})
-	target=i386-pc-solaris$(solaris_version)
+else
 	sysroot=
 endif
 # -----------------------------------------------------------------------------
 # The URL from where we get most of our sources.
 sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
+toolurl=https://pl-build-tools.delivery.puppetlabs.net/solaris
 # -----------------------------------------------------------------------------
 #  A few internal definitions. sys_rel decides whether
 #  we are building solaris 10 or solaris 11. Note that if we set sys_rel
@@ -72,11 +76,19 @@ sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
 sys_rel:=$(subst 5.,,$(shell uname -r))
 solaris_version=2.$(sys_rel)
 
+# how we want to get our compiler suite?
+# use `gmake getcompilers=fetch __` to get it from the precompiled tarballs in
+# remote repo. Use `gmake getcompilers=make __` to make use of locally
+# compiled suite.
+
+getcompilers:=fetch
+export getcompilers
+
 # The source/ directory ideally should not contain arch dependent files since
-# it is used mostly for extracting sources (an exception is the headers which
-# are arch dependent but still sources). On the other hand, our builds have
+# it is used mostly for extracting sources. On the other hand, our builds have
 # separate directories for each $arch
 builds=$(addprefix build/$(arch)/,$(projects)) 
+installs=$(addprefix install/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
 
 # our touch files, which indicate that specific actions have completed
@@ -87,9 +99,11 @@ toolchain_=$(addsuffix ._.cmakeenv, source/$(arch)/)
 patch_=$(addsuffix /._.patch,$(builds))
 config_=$(addsuffix /._.config,$(builds))
 checkout_=$(addsuffix /._.checkout,$(builds))
+install_=$(addsuffix /._.install,$(installs))
 
 # Asking make not to delete any of our intermediate touch files.
-.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_) $(toolchain_)
+.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(install_) \
+	$(checkout_) $(toolchain_) 
 # -----------------------------------------------------------------------------
 ar=/usr/ccs/bin/ar
 tar=/usr/sfw/bin/gtar
@@ -97,9 +111,12 @@ gzip=/bin/gzip
 bzip2=/bin/bzip2
 patch=/bin/gpatch
 rsync=/bin/rsync
+wget=wget -q -c --no-check-certificate
+git=git
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
+cmake=$(installroot)/gcc-i386/bin/cmake
 # -----------------------------------------------------------------------------
 # $mydirs, and the make rule make sure that our directories are created before
 # they are needed. To make use of this, add the directory here, and in the
@@ -107,10 +124,11 @@ ld=$(prefix)/$(target)/bin/ld
 # exists. (Notice the use of '|' to ensure that our targets do not get rebuilt
 # unnecessarily)
 
-sysdirs=/opt/gcc-$(arch)/sysroot /usr/local
-mydirs=source build $(source) $(builds) \
+sysdirs=$(installroot)/gcc-$(arch)/sysroot
+mydirs=source build install $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
-			 source/$(arch)/root $(sysdirs)
+			 source/$(arch)/root $(sysdirs) \
+			 source/cfacter build/$(arch)/cfacter
 $(mydirs): ; mkdir -p $@
 # -----------------------------------------------------------------------------
 # some trickery to use array path elements
@@ -118,7 +136,7 @@ e:=
 space:=$(e) $(e)
 path=$(prefix)/bin \
 		 $(prefix)/$(target)/bin \
-		 /opt/gcc-$(arch)/bin \
+		 $(installroot)/gcc-$(arch)/bin \
 		 /usr/ccs/bin \
 		 /usr/gnu/bin \
 		 /usr/bin \
@@ -130,25 +148,31 @@ path=$(prefix)/bin \
 
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
+export BOOST_ROOT:=/opt/pl-build/boost_$(boost_ver)
+export YAMLCPP_ROOT=/opt/pl-build
 # -----------------------------------------------------------------------------
 
 # ENTRY
 all:
-	@echo usage: $(MAKE) arch=$(arch) cfacter
+	@echo "usage:\tsudo $(MAKE) prepare"
+	@echo "\t$(MAKE) arch=$(arch) cfacter"
+	@echo
+	@echo "remove:\tsudo $(MAKE) uninstall"
+
 
 # -----------------------------------------------------------------------------
 #  Generic definitions, override them to implement any specific behavior.
 
 source/%.tar.gz: | source
-	wget -q -c -P source/ $(sourceurl)/$*.tar.gz
+	$(wget) -P source/ $(sourceurl)/$*.tar.gz
 
 source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
-	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
+	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 # ENTRY
 # use `gmake arch=sparc headers` just extract the headers. The following rules
-headers: source/$(arch)/._.headers
+headers: build/$(arch) build/$(arch)/._.headers
 	@echo $@ done
 
 # by default we dont have any patches, so override it for projects that have
@@ -167,16 +191,18 @@ build/$(arch)/%/._.make: | build/$(arch)/%/._.config
 	touch $@
 
 # And make install should work.
-build/$(arch)/%/._.install: | build/$(arch)/%/._.make
+install/$(arch)/%/._.install: | build/$(arch)/%/._.make install/$(arch)/%
 	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
 	touch $@
 
 # ENTRY
-%-cmakeenv: | source/%/._.cmakeenv source/%
+cmakeenv: cmakeenv-$(arch)
+
+cmakeenv-%: | source/%/._.cmakeenv source/%
 	@echo $@ done
 
-source/%/._.cmakeenv: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
-	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
+source/%/._.cmakeenv: source/sol-$(sys_rel)-%-toolchain.cmake | $(installroot)/gcc-% source/%
+	cp source/sol-$(sys_rel)-$*-toolchain.cmake $(installroot)/gcc-$*/
 	touch $@
 
 # ENTRY
@@ -189,7 +215,7 @@ clean:
 # Clean out the installed packages. Unfortunately, we also need to
 # redo the headers 
 clobber:
-	rm -rf /opt/gcc-sparc /opt/gcc-i386 /usr/local/boost_$(boost_ver)
+	rm -rf $(installroot)
 
 prepare-10:
 	@echo
@@ -202,27 +228,27 @@ prepare-11:
 # This is to be the only command that requires `sudo` or root.
 # Use `sudo gmake prepare` to invoke.
 prepare: prepare-$(sys_rel)
-	rm -rf /opt/gcc-sparc /opt/gcc-i386
-	mkdir -p /opt/gcc-sparc /opt/gcc-i386 /usr/local
-	chmod 777 /opt/gcc-sparc /opt/gcc-i386 /usr/local
+	rm -rf $(installroot)
+	mkdir -p $(installroot)
+	chmod 777 $(installroot)
 
 # extract the headers
-source/%/._.headers: | source/%.sysroot.tar.gz /opt/gcc-%/sysroot
-	cat source/$*.sysroot.tar.gz | (cd /opt/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xpf - )
+build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/gcc-%/sysroot
+	cat source/$*.sysroot.tar.gz | (cd $(installroot)/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 
 # we have a few extra patches for binutils, so overriding the default make rules.
 source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
-	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
-	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
+	$(wget) -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
+	$(wget) -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
 	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && $(patch) -p0)
 	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && $(patch) -p0)
 	touch $@
 
 # one patch for gcc too.
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
-	wget -q -c -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
+	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
@@ -235,10 +261,10 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 	touch $@
 
 # GCC depends on binutils being already installed.
-build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
+build/$(arch)/gcc-$(gcc_ver)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
 # The sparc cross compiler requires the sparc system headers already present.
-build/sparc/gcc-$(gcc_ver)/._.config: source/sparc/._.headers
+build/sparc/gcc-$(gcc_ver)/._.config: build/sparc/._.headers
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
 	cd ./build/$(arch)/gcc-$(gcc_ver) && \
@@ -249,7 +275,7 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build
 			-v > .x.config.log
 	touch $@
 
-build/$(arch)/cmake-$(cmake_ver)/._.config: build/$(arch)/gcc-$(gcc_ver)/._.install
+build/$(arch)/cmake-$(cmake_ver)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
 
 build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/i386/cmake-$(cmake_ver)
 	cd ./build/i386/cmake-$(cmake_ver) && env CC=$(prefix)/bin/gcc \
@@ -266,44 +292,123 @@ build/sparc/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch .
 	echo "Can not build cmake for sparc" && exit 1
 
 source/boost_$(boost_ver).tar.bz2: | source
-	wget -q -c -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
+	$(wget) -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
 
-source/boost_$(boost_ver)/._.checkout: | build/$(arch)/boost_$(boost_ver) source/boost_$(boost_ver).tar.bz2
-	cat source/boost_$(boost_ver).tar.bz2 | (cd source/ && $(bzip2) -dc | $(tar) -xpf - )
+build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) source/boost_$(boost_ver).tar.bz2
+	cat source/boost_$(boost_ver).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-source/boost_$(boost_ver)/._.hinstall: source/boost_$(boost_ver)/._.checkout /usr/local
-	cat source/boost_$(boost_ver).tar.bz2 | (cd /usr/local/ && $(bzip2) -dc | $(tar) -xpf - )
+#/opt/pl-build/gcc-i386/bin/i386-pc-solaris2.10-gcc
+build/sparc/boost_$(boost_ver)/._.patch: build/sparc/boost_$(boost_ver)/._.checkout
+	echo 'using gcc : 4.8.2 : /opt/pl-build/gcc-sparc/bin/$(call mytarget,sparc)-g++ :<linkflags>\"-Wl,-rpath=/opt/gcc-sparc/lib\";' > build/sparc/boost_$(boost_ver)/user-config.jam
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.config: source/boost_$(boost_ver)/._.checkout build/$(arch) source/boost_$(boost_ver)/._.hinstall
-	cd source/boost_$(boost_ver)/tools/build/v2 && ./bootstrap.sh --with-toolset=gcc
+build/i386/boost_$(boost_ver)/._.patch: build/i386/boost_$(boost_ver)/._.checkout
+	echo 'using gcc : 4.8.2 : /opt/pl-build/gcc-i386/bin/$(call mytarget,i386)-g++ :<linkflags>\"-Wl,-rpath=/opt/gcc-i386/lib\";' > build/i386/boost_$(boost_ver)/user-config.jam
 	touch $@
 
-source/boost_$(boost_ver)/._.b2install: source/boost_$(boost_ver)/._.checkout
-	cd source/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(prefix) toolset=gcc
+
+install/._.boost_$(boost_ver)-hinstall: | $(installroot) install
+	cat source/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config source/boost_$(boost_ver)/._.b2install
-	cd source/boost_$(boost_ver)/ && $(prefix)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) toolset=gcc stage
+build/$(arch)/boost_$(boost_ver)/._.config: build/$(arch)/boost_$(boost_ver)/._.patch build/$(arch) install/._.boost_$(boost_ver)-hinstall
+	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./bootstrap.sh
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make
+install/$(arch)/boost_$(boost_ver)/._.b2install: build/$(arch)/boost_$(boost_ver)/._.checkout | install/$(arch)/boost_$(boost_ver)
+	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(installroot)/gcc-$(arch) toolset=gcc --debug-configuration
+	touch $@
+
+build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config install/$(arch)/boost_$(boost_ver)/._.b2install
+	cd build/$(arch)/boost_$(boost_ver)/ && $(installroot)/gcc-$(arch)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) --prefix=$(installroot)/gcc-$(arch) --debug-configuration \
+		--with-filesystem \
+		--with-log \
+		--with-program_options \
+		--with-regex \
+		--with-system \
+		install
+	touch $@
+
+install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make | install/$(arch)/boost_$(boost_ver)
 	touch $@
 
 # ENTRY
-boost: | build/$(arch)/boost_$(boost_ver)/._.make
-	@echo done
+boost: | install/$(arch)/boost_$(boost_ver)/._.install
+	@echo $@ done
+
+source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
+	$(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
+
+#source/yaml-cpp-$(yamlcpp_ver)/._.checkout: | build/$(arch)/yaml-cpp-$(yamlcpp_ver) source/yaml-cpp-$(yamlcpp_ver).tar.gz
+#	cat source/yaml-cpp-$(yamlcpp_ver).tar.gz | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
+#	touch $@
+
+build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config: | source/yaml-cpp-$(yamlcpp_ver)/._.patch ./build/i386/yaml-cpp-$(yamlcpp_ver)
+	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && \
+	$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(installroot)/gcc-$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
+	         -DCMAKE_VERBOSE_MAKEFILE=ON \
+	         -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) \
+	         -DBUILD_SHARED_LIBS=ON \
+	         -DYAML_CPP_BUILD_TOOLS=0 ../../../source/yaml-cpp-$(yamlcpp_ver)
+
+#build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.make: | build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config
+#	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && $(gmake)
 
 # ENTRY
-toolchain-sparc:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+yaml-cpp:| install/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.install
 
 # ENTRY
-toolchain-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+# We use the native cmake to build our cross-compiler, which unfortunately
+# means that we have to build the native toolchain aswell
+make-toolchain-sparc:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
+	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/gcc-sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-i386-compilers.tar.gz
+	@echo $@ done
+
+# ENTRY
+make-toolchain-i386:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
+	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
+	@echo $@ done
+
+source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
+	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
+
+$(installroot)/gcc-$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
+	@echo start $@
+	cat source/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+	@echo done $@
+
+fetch-toolchain-i386: | $(installroot)/gcc-i386/bin/$(call mytarget,i386)-gcc
+	@echo done $@
+
+fetch-toolchain-sparc: | $(installroot)/gcc-sparc/bin/$(call mytarget,sparc)-gcc
+	@echo done $@
+
+# fetch-toolchain-$arch && make-toolchain-$arch
+install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
+	@echo $@ done
+
+toolchain: install-toolchain-$(arch)
+
+source/cfacter/.git: | source source/cfacter
+	$(git) clone git@github.com:puppetlabs/cfacter.git source/cfacter/
+
+
+build/$(arch)/cfacter/._.config: | source/cfacter/.git build/$(arch)/cfacter
+	cd build/$(arch)/cfacter && $(cmake) ../../../source/cfacter
+
+#build/$(arch)/cfacter/._.make: build/$(arch)/cfacter/._.config
+#	cd build/$(arch)/cfacter && $(gmake)
+
+facter-i386: | build/$(arch)/cfacter/._.make
+
+facter: facter-$(arch) 
 
 # ENTRY
 uninstall: clobber
-	rm -f source/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+	rm -f install/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  install/$(arch)/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
 # To compile native cfacter, we can just build the native cross-compiler
@@ -314,11 +419,21 @@ uninstall: clobber
 
 cfacter: cfacter-$(arch)
 
+deps: boost yaml-cpp
+	@echo $@ done
+
 cfacter-sparc:
-	$(MAKE) toolchain-i386
-	$(MAKE) toolchain-sparc
+	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
+	$(MAKE) arch=i386 cmakeenv
+	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers)
+	$(MAKE) arch=sparc cmakeenv
+	$(MAKE) arch=i386 deps
+	$(MAKE) arch=i386 facter
 
 cfacter-i386:
-	$(MAKE) toolchain-i386
+	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
+	$(MAKE) arch=i386 cmakeenv
+	$(MAKE) arch=i386 deps
+	$(MAKE) arch=i386 facter
 
 
