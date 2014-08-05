@@ -20,7 +20,7 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch | ./build/i386/$(cmake
 			--docdir=/share/doc/$(cmake_) \
 			--mandir=/share/man \
 			--verbose \
-	) $(t)> $@.log
+	) $(t) $@.log
 	touch $@
 
 build/sparc/$(cmake_)/._.config: source/$(cmake_)/._.patch | ./build/$(arch)/$(cmake_)

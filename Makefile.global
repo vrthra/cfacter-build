@@ -155,4 +155,9 @@ cmakepath_=$(gccpath)/bin \
 cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
 
 SHELL=/bin/bash -e -o pipefail
-t=2>&1 | tee -a build.log
+
+# redirect config make & make install output to a build.log
+t=2>&1 | tee -a build.log >
+
+# Use this if you dislike redirecting to logs, and would rather roll your own
+#t=; echo 

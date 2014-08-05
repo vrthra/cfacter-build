@@ -7,7 +7,7 @@ $(eval $(call standard_x,$(gcc_)))
 # one patch for gcc too.
 source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
 	cat patches/gcc-contrib-4.8.2.patch | (cd $(rootdir)/source/$(gcc_) && $(patch) -p1 )
-	(cd $(rootdir)/source/$(gcc_) && ./contrib/download_prerequisites ) $(t)>$@.log
+	(cd $(rootdir)/source/$(gcc_) && ./contrib/download_prerequisites ) $(t) $@.log
 	touch $@
 
 # extract the headers
@@ -37,7 +37,7 @@ build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch | ./build/$(arch)/$(gcc
 			--with-gnu-ld \
 			--with-ld=$(ld) \
 			-v \
-	) $(t)>$@.log
+	) $(t) $@.log
 	touch $@
 
 # ENTRY

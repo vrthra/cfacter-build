@@ -10,14 +10,15 @@ fetched/$(yamlcpp_).tar.gz: | source
 	$(wget) -P fetched/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
 
 build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch | ./build/$(arch)/$(yamlcpp_)
-	cd build/$(arch)/$(yamlcpp_) && \
-	$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
-	         -DCMAKE_VERBOSE_MAKEFILE=ON \
-	         -DCMAKE_INSTALL_PREFIX:PATH=$(prefix) \
-	         -DBUILD_SHARED_LIBS=ON \
-	         -DYAML_CPP_BUILD_TOOLS=0 $(rootdir)/source/$(yamlcpp_)
+	(cd build/$(arch)/$(yamlcpp_) && \
+		$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
+		  -DCMAKE_VERBOSE_MAKEFILE=ON \
+		  -DCMAKE_INSTALL_PREFIX:PATH=$(prefix) \
+		  -DBUILD_SHARED_LIBS=ON \
+		  -DYAML_CPP_BUILD_TOOLS=0 $(rootdir)/source/$(yamlcpp_) \
+		) $(t) $@.log
 	touch $@
 
 # ENTRY
 yaml-cpp: install/$(arch)/$(yamlcpp_)/._.install
-
+	@echo $@ done

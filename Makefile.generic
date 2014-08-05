@@ -25,11 +25,11 @@ build/$(arch)/%/._.config: source/%/._.patch
 
 # In general make should be just make
 build/$(arch)/%/._.make: build/$(arch)/%/._.config
-	(cd build/$(arch)/$*/ && $(MAKE) ) $(t)> $@.log
+	(cd build/$(arch)/$*/ && $(MAKE) ) $(t) $@.log
 	touch $@
 
 # And make install should work.
 install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
-	(cd build/$(arch)/$*/ && $(MAKE) install ) $(t)> $@.log
+	(cd build/$(arch)/$*/ && $(MAKE) install ) $(t) $@.log
 	touch $@
 

@@ -19,7 +19,7 @@ build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch | ./build/$(a
 			$(sysroot) \
 			--disable-nls \
 			-v \
-	) $(t)> $@.log
+	) $(t) $@.log
 	touch $@
 
 # ENTRY

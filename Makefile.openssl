@@ -46,11 +46,11 @@ build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 				no-gost \
 				no-srp \
 				no-ssl2 \
-	) $(t)> $@.log
+	) $(t) $@.log
 	touch $@
 
 build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.config
-	cd build/$(arch)/$(openssl_) && $(MAKE) depend && $(MAKE)
+	(cd build/$(arch)/$(openssl_) && $(MAKE) depend && $(MAKE) ) $(t) $@.log
 	touch $@
 
 install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make | install/$(arch)/$(openssl_)

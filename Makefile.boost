@@ -24,7 +24,7 @@ userconfig:
 build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch
 	(cd build/$(arch)/$(boost_)/tools/build/v2 && \
 		env $(cmakepath) \
-		./bootstrap.sh ) $(t)> $@.log
+		./bootstrap.sh ) $(t) $@.log
 	touch $@
 
 install/$(arch)/$(boost_)/._.b2install: build/$(arch)/$(boost_)/._.checkout | install/$(arch)/$(boost_)
@@ -43,7 +43,7 @@ build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arc
 		--with-regex \
 		--with-system \
 		install \
-	) $(t)> $@.log
+	) $(t) $@.log
 	touch $@
 
 install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make | install/$(arch)/$(boost_)
