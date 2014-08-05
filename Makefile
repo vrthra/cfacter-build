@@ -134,8 +134,7 @@ all:
 	@echo usage: $(MAKE) arch=$(arch) cfacter
 
 # -----------------------------------------------------------------------------
-#  Generic arch independent rules. Fetches the sources, extracts them correctly
-#  and applies patches.
+#  Generic definitions, override them to implement any specific behavior.
 
 source/%.tar.gz: | source
 	wget -q -c -P source/ $(sourceurl)/$*.tar.gz
@@ -144,16 +143,55 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
+# use `gmake arch=sparc headers` just extract the headers. The following rules
+headers: source/$(arch)/._.headers
+	@echo $@ done
+
+# by default we dont have any patches, so override it for projects that have
+# it.
+source/%/._.patch: | source/%/._.checkout
+	touch $@
+
+# we cant predict the options to be passed to config, so we only have
+# a skeletal rule here. Override them for specific projects.
+build/$(arch)/%/._.config: | source/%/._.patch
+	touch $@
+
+# In general make should be just make
+build/$(arch)/%/._.make: | build/$(arch)/%/._.config
+	cd build/$(arch)/$*/ && $(MAKE) > .x.make.log
+	touch $@
+
+# And make install should work.
+build/$(arch)/%/._.install: | build/$(arch)/%/._.make
+	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
+	touch $@
+
+%-toolchain: | source/%/._.toolchain source/%
+	@echo $@ done
+
+source/%/._.toolchain: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
+	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
+	touch $@
+
+clean:
+	rm -rf build/$(arch)
+
+clobber:
+	rm -rf /opt/gcc-sparc /opt/gcc-i386
+
+prepare:
+	rm -rf /opt/gcc-sparc /opt/gcc-i386
+	mkdir -p /opt/gcc-sparc /opt/gcc-i386 /usr/local
+	chmod 777 /opt/gcc-sparc /opt/gcc-i386 /usr/local
+
 # extract the headers
 source/%/._.headers: | source/%.sysroot.tar.gz /opt/gcc-%/sysroot
 	cat source/$*.sysroot.tar.gz | (cd /opt/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
-# use `gmake arch=sparc headers` just extract the headers. The following rules
-headers: source/$(arch)/._.headers
-	@echo $@ done
 
-
+# we have a few extra patches for binutils, so overriding the default make rules.
 source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
@@ -202,38 +240,6 @@ build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./
 
 build/sparc/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-$(cmake_ver)
 	echo "Can not build cmake for sparc" && exit 1
-
-source/%/._.patch: | source/%/._.checkout
-	touch $@
-
-build/$(arch)/%/._.config: | source/%/._.patch
-	touch $@
-
-build/$(arch)/%/._.make: | build/$(arch)/%/._.config
-	cd build/$(arch)/$*/ && $(MAKE) > .x.make.log
-	touch $@
-
-build/$(arch)/%/._.install: | build/$(arch)/%/._.make
-	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
-	touch $@
-
-%-toolchain: | source/%/._.toolchain source/%
-	@echo $@ done
-
-source/%/._.toolchain: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
-	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
-	touch $@
-
-clean:
-	rm -rf build/$(arch)
-
-clobber:
-	rm -rf /opt/gcc-sparc /opt/gcc-i386
-
-prepare:
-	rm -rf /opt/gcc-sparc /opt/gcc-i386
-	mkdir -p /opt/gcc-sparc /opt/gcc-i386 /usr/local
-	chmod 777 /opt/gcc-sparc /opt/gcc-i386 /usr/local
 
 source/boost_$(boost_ver).tar.bz2: | source
 	wget -q -c -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
