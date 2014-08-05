@@ -187,7 +187,7 @@ clean:
 # Clean out the installed packages. Unfortunately, we also need to
 # redo the headers 
 clobber:
-	rm -rf /opt/gcc-sparc /opt/gcc-i386 rm -f source/sparc/._.hinstall
+	rm -rf /opt/gcc-sparc /opt/gcc-i386 /usr/local/boost_$(boost_ver)
 
 # ENTRY
 # This is to be the only command that requires `sudo` or root.
@@ -291,6 +291,10 @@ cross-compilers-sparc:  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch
 
 # ENTRY
 cross-compilers-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+
+# ENTRY
+uninstall: clobber
+	rm -f source/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
 cfacter: cross-compilers-$(arch) boost $(arch)-toolchain
