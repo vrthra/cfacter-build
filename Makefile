@@ -2,17 +2,26 @@ solaris_version=2.10
 binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
+boost_ver=1_55_0
 arch=i386
 
 sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
 
-include Makefile.$(arch)
+prefix=/opt/gcc-$(arch)
+ifeq (sparc,${arch})
+	target=sparc-sun-solaris$(solaris_version)
+	sysroot=--with-sysroot=$(prefix)/sparc-sysroot
+else
+	prefix=/opt/gcc-i386
+	target=i386-pc-solaris$(solaris_version)
+	sysroot=
+endif
 
 myprojects=binutils gcc cmake
 myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver)
 
-projects=$(join $(addsuffix -,$(myprojects)),$(myversions))
-builds=$(addprefix build/$(arch)/,$(projects))
+projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
+builds=$(addprefix build/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
 
 mydirs=build/$(arch) source $(builds)
@@ -43,9 +52,12 @@ all: build/$(arch)/cmake-$(cmake_ver)/._.install
 source/%.tar.gz: | source
 	wget -q -c -P source/ $(sourceurl)/$*.tar.gz
 
-source/%/._.checkout: | source/%.tar.gz build/$(arch)
+source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
+
+headers:
+	cat source/
 
 source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
@@ -121,4 +133,5 @@ prepare:
 	mkdir -p /opt/gcc-sparc /opt/gcc-i386
 	chmod 777 /opt/gcc-sparc /opt/gcc-i386
 
-
+boost: | build/$(arch)/boost_$(boost_ver)/._.make
+	@echo done

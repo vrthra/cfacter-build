@@ -1,3 +1,0 @@
-prefix=/opt/gcc-i386
-target=i386-pc-solaris$(solaris_version)
-sysroot=
