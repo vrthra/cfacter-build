@@ -34,7 +34,7 @@ ld=$(prefix)/bin/$(target)-ld
 
 $(mydirs): ; mkdir -p $@
 
-all: $(make_)
+all: build/$(arch)/cmake-$(cmake_ver)/._.install
 	@echo $* done
 
 source/%.tar.gz: | source
@@ -52,7 +52,8 @@ build/$(arch)/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ve
 	touch $@
 
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
-	cat source/gcc.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
+	wget -c -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
+	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites
 	touch $@
 
@@ -63,6 +64,8 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 		../../../source/binutils-$(binutils_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
 	touch $@
+
+build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch
 	rm -rf ./build/$(arch)/gcc-$(gcc_ver); mkdir -p ./build/$(arch)/gcc-$(gcc_ver)
@@ -75,11 +78,13 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch
 
 			# --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld)
 
+build/$(arch)/cmake-$(cmake_ver)/._.config: build/$(arch)/gcc-$(gcc_ver)/._.install
+
 build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch
-	echo TODO CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(i386_PREFIX)/include" LDFLAGS="-L$(i386_PREFIX)/lib -R$(i386_PREFIX)/lib"
 	rm -rf ./build/$(arch)/cmake-$(cmake_ver); mkdir -p ./build/$(arch)/cmake-$(cmake_ver)
 	cd ./build/$(arch)/cmake-$(cmake_ver) && \
-		../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose
+		env CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
+			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose
 	touch $@
 
 source/%/._.patch: | source/%/._.checkout
@@ -89,9 +94,18 @@ build/$(arch)/%/._.config: | source/%/._.patch
 	touch $@
 
 build/$(arch)/%/._.make: | build/$(arch)/%/._.config
-	$(MAKE)
+	cd build/$(arch)/$*/ && $(MAKE)
 	touch $@
 
+build/$(arch)/%/._.install: | build/$(arch)/%/._.make
+	cd build/$(arch)/$*/ && $(MAKE) install
+	touch $@
 
-clobber:
+clean:
 	rm -rf build/$(arch)
+
+# slightly dangerous
+
+# clobber:
+#  	[ ! -z $(prefix) ] && rm -rf $(prefix)
+
