@@ -73,11 +73,11 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | build/$(arch)/gcc-$(gcc_ver)/._.patch
 
 			# --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld)
 
-build/$(arch)/%/._.patch: | build/$(arch)/%/._.checkout
+source/%/._.patch: | source/%/._.checkout
 	touch $@
 
 
-build/$(arch)/%/._.config: | build/$(arch)/%/._.patch
+build/$(arch)/%/._.config: | source/%/._.patch
 	touch $@
 
 
