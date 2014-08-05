@@ -179,4 +179,9 @@ build/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._
 boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
 
-cfacter: boost $(arch)-toolchain
+cross-compilers-sparc:  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+
+cross-compilers-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+
+cfacter: cross-compilers-$(arch) boost $(arch)-toolchain
+
