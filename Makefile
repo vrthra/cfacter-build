@@ -24,6 +24,7 @@ checkout_=$(addsuffix /._.checkout,$(builds))
 
 tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
+patch=/bin/gpatch
 
 as=$(prefix)/bin/$(target)-as
 ld=$(prefix)/bin/$(target)-ld
@@ -46,11 +47,12 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)
 build/$(arch)/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
 	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
-	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && patch -p0)
-	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && patch -p0)
+	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && $(patch) -p0)
+	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && $(patch) -p0)
 	touch $@
 
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
+	cat source/gcc.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites
 	touch $@
 
@@ -62,16 +64,23 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
 	touch $@
 
-build/$(arch)/gcc-$(gcc_ver)/._.config: | build/$(arch)/gcc-$(gcc_ver)/._.patch
-	rm -rf ./build/$(arch)/gcc-$(gcc_ver)-x; mkdir -p ./build/$(arch)/gcc-$(gcc_ver)-x
-	cd ./build/$(arch)/gcc-$(gcc_ver)-x && \
-		../../../build/$(arch)/gcc-$(gcc_ver)/configure \
+build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch
+	rm -rf ./build/$(arch)/gcc-$(gcc_ver); mkdir -p ./build/$(arch)/gcc-$(gcc_ver)
+	cd ./build/$(arch)/gcc-$(gcc_ver) && \
+		../../../source/gcc-$(gcc_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
 			--disable-libgcj \
 			-v > .x.config.log
 	touch $@
 
 			# --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld)
+
+build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch
+	echo TODO CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(i386_PREFIX)/include" LDFLAGS="-L$(i386_PREFIX)/lib -R$(i386_PREFIX)/lib"
+	rm -rf ./build/$(arch)/cmake-$(cmake_ver); mkdir -p ./build/$(arch)/cmake-$(cmake_ver)
+	cd ./build/$(arch)/cmake-$(cmake_ver) && \
+		../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose
+	touch $@
 
 source/%/._.patch: | source/%/._.checkout
 	touch $@
