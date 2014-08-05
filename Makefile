@@ -99,7 +99,7 @@ checkout: $(checkout_)
 
 cfacter: cfacter-$(arch)
 
-deps: boost yaml-cpp openssl
+depends: boost yaml-cpp openssl
 	@echo $@ done
 
 # being lazy again. I promice to make them follow the dependencies correctly
@@ -107,12 +107,12 @@ deps: boost yaml-cpp openssl
 cfacter-sparc:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=sparc deps
+	$(MAKE) arch=sparc depends
 	$(MAKE) arch=sparc facter
 
 cfacter-i386:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=i386 deps
+	$(MAKE) arch=i386 depends
 	$(MAKE) arch=i386 facter
 
 $(mydirs): ; /bin/mkdir -p $@

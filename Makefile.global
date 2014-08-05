@@ -154,4 +154,5 @@ cmakepath_=$(gccpath)/bin \
 
 cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
 
+SHELL=/bin/bash -e -o pipefail
 t=2>&1 | tee -a build.log

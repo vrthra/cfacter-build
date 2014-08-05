@@ -4,7 +4,7 @@
 fetched/%.tar.gz: | fetched
 	$(wget) -P fetched/ $(sourceurl)/$*.tar.gz
 
-source/%/._.checkout: fetched/%.tar.gz build/$(arch)/% | source
+source/%/._.checkout: fetched/%.tar.gz | build/$(arch)/% source
 	cat fetched/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
