@@ -1,3 +1,4 @@
+solaris_version=2.10
 binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
@@ -27,8 +28,8 @@ tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
 patch=/bin/gpatch
 
-as=$(prefix)/bin/$(target)-as
-ld=$(prefix)/bin/$(target)-ld
+as=$(prefix)/$(target)/bin/as
+ld=$(prefix)/$(target)/bin/ld
 
 export PATH:=$(prefix)/$(target)/bin:/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin:/usr/perl5/5.8.4/bin
 
@@ -106,4 +107,11 @@ clean:
 
 # clobber:
 #  	[ ! -z $(prefix) ] && rm -rf $(prefix)
+
+
+prepare:
+	rm -rf /opt/gcc-sparc /opt/gcc-i386
+	mkdir -p /opt/gcc-sparc /opt/gcc-i386
+	chmod 777 /opt/gcc-sparc /opt/gcc-i386
+
 

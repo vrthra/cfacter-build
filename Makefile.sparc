@@ -1,3 +1,3 @@
 prefix=/opt/gcc-sparc
-target=sparc-sun-solaris2.11
+target=sparc-sun-solaris$(solaris_version)
 sysroot=--with-sysroot=$(prefix)/sparc-sysroot
