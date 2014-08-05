@@ -38,21 +38,21 @@ all: build/$(arch)/cmake-$(cmake_ver)/._.install
 	@echo $* done
 
 source/%.tar.gz: | source
-	wget -c -P source/ $(sourceurl)/$*.tar.gz
+	wget -q -c -P source/ $(sourceurl)/$*.tar.gz
 
 source/%/._.checkout: | source/%.tar.gz build/$(arch)
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
 build/$(arch)/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
-	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
-	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
+	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
+	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
 	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && $(patch) -p0)
 	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && $(patch) -p0)
 	touch $@
 
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
-	wget -c -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
+	wget -q -c -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites
 	touch $@
@@ -84,7 +84,7 @@ build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch
 	rm -rf ./build/$(arch)/cmake-$(cmake_ver); mkdir -p ./build/$(arch)/cmake-$(cmake_ver)
 	cd ./build/$(arch)/cmake-$(cmake_ver) && \
 		env CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
-			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose
+			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose > .x.config.log
 	touch $@
 
 source/%/._.patch: | source/%/._.checkout
@@ -94,11 +94,11 @@ build/$(arch)/%/._.config: | source/%/._.patch
 	touch $@
 
 build/$(arch)/%/._.make: | build/$(arch)/%/._.config
-	cd build/$(arch)/$*/ && $(MAKE)
+	cd build/$(arch)/$*/ && $(MAKE) > .x.make.log
 	touch $@
 
 build/$(arch)/%/._.install: | build/$(arch)/%/._.make
-	cd build/$(arch)/$*/ && $(MAKE) install
+	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
 	touch $@
 
 clean:
