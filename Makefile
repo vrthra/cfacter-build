@@ -319,10 +319,10 @@ uninstall: clobber
 cfacter: cfacter-$(arch)
 
 cfacter-sparc:
-	$(MAKE) toolchain-i386
-	$(MAKE) toolchain-sparc
+	$(MAKE) arch=i386 toolchain-i386
+	$(MAKE) arch=sparc toolchain-sparc
 
 cfacter-i386:
-	$(MAKE) toolchain-i386
+	$(MAKE) arch=i386 toolchain-i386
 
 
