@@ -34,13 +34,21 @@ all: $(make_)
 source/%.tar.gz: source
 	wget -c -P source/ $(sourceurl)/$*.tar.gz
 
-build/$(arch)/%/._.checkout: source/%.tar.gz | build/$(arch)
+build/$(arch)/%/._.checkout: | source/%.tar.gz build/$(arch)
 	cat $< | (cd build/$(arch)  && $(gzip) -dc | $(tar) -xpf - )
 	@touch $@
 
 
+build/$(arch)/binutils-$(binutils_ver)/._.patch: build/$(arch)/binutils-$(binutils_ver)/._.checkout
+	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
+	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
+	cat source/binutils-2.23.2-common.h.patch | (cd build/$(arch)/binutils-$(binutils_ver)/include/elf && patch -p0)
+	cat source/binutils-2.23.2-ldlang.c.patch | (cd build/$(arch)/binutils-$(binutils_ver)/ && patch -p0)
+	touch $@
+
+
 build/$(arch)/%/._.patch: build/$(arch)/%/._.checkout
-	echo touch $@
+	touch $@
 
 
 build/$(arch)/%/._.config: build/$(arch)/%/._.patch
@@ -49,3 +57,7 @@ build/$(arch)/%/._.config: build/$(arch)/%/._.patch
 
 build/$(arch)/%/._.make: build/$(arch)/%/._.config
 	echo touch $@
+
+
+clobber:
+	rm -rf build/$(arch)
