@@ -189,10 +189,17 @@ clean:
 clobber:
 	rm -rf /opt/gcc-sparc /opt/gcc-i386 /usr/local/boost_$(boost_ver)
 
+prepare-10:
+	echo
+
+prepare-11:
+	pkg install developer/gcc-45
+	pkg install system/header
+
 # ENTRY
 # This is to be the only command that requires `sudo` or root.
 # Use `sudo gmake prepare` to invoke.
-prepare:
+prepare: prepare-$(sys_rel)
 	rm -rf /opt/gcc-sparc /opt/gcc-i386
 	mkdir -p /opt/gcc-sparc /opt/gcc-i386 /usr/local
 	chmod 777 /opt/gcc-sparc /opt/gcc-i386 /usr/local
@@ -287,7 +294,7 @@ boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
 
 # ENTRY
-cross-compilers-sparc:  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+cross-compilers-sparc:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
 cross-compilers-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
