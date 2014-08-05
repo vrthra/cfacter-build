@@ -1,12 +1,58 @@
-solaris_ver=10
-solaris_version=2.$(solaris_ver)
+# =============================================================================
+# This makefile is setup to build cfacter first building the
+# cross-compiler suite (binutils, cross-compilers, cmake) followed by
+# cfacter dependencies (boost, yaml, openssl)
+# deprecated: (apachelogcxx, re2)
+# Threaded dependendencies are setup loosely following the opensolaris package
+# maintainer best practices. Our directory structure is as follows
+#
+# ./
+# ./source
+# ./source/${arch:sparc,i386}/root          -- contains sysroot headers
+# ./source/<patches>
+# ./source/$project_$version.tar.gz
+# ./source/$project_$version/								-- generated from tar.gz
+# ./build
+# ./build/${arch:sparc,i386}
+# ./build/${arch:sparc,i386}/$project_$version/
+#
+# The general steps (along with dependencies) are as follows (< needs)
+#
+# source/%.tar.gz
+# 	< source/%/._.checkout
+#	 		< source/%/._.patch
+#	 			< source/%/._.config
+#	 				< source/%/._.make
+#	 					< source/%/._.install
+# =============================================================================
+#  The general variables that may be modified from the environment. The most
+#  important is the arch changes whether a native compiler or a cross-compiler
+#  is built. Second most important is the sys_rel which decides whether
+#  we are building solaris 10 or solaris 11. Note that if we set sys_rel
+#  to 11 on a solaris 10 machine, gcc generates a cross compiler,
+#  (and v.v. for s11).
+
+arch=i386
+sys_rel=10
 binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
 boost_ver=1_55_0
-arch=i386
+yaml_ver=0.5.1
+# -----------------------------------------------------------------------------
+# These are the projects we are currently building. Where possible, try to
+# follow the $project-$ver format, if not, use the boost example.
 
-sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
+myprojects=binutils gcc cmake
+myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver)
+projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
+# -----------------------------------------------------------------------------
+#  These are arch dependent definitions for native and cross compilers.
+#  These should be moved to their own files, and included with
+#  `include Makefile.$(arch)` if ever the number of definitions increases
+#  further or any generic makefile rules are added for one of the platforms.
+#  Similarly, add `include Makefile.$(sys_rel)`
+#  and `include Makefile.$(arch).$(sys_rel)` if necessary.
 
 prefix=/opt/gcc-$(arch)
 ifeq (sparc,${arch})
@@ -17,18 +63,22 @@ ifeq (i386,${arch})
 	target=i386-pc-solaris$(solaris_version)
 	sysroot=
 endif
+# -----------------------------------------------------------------------------
+# The URL from where we get most of our sources.
+sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
+# -----------------------------------------------------------------------------
+#  A few internal definitions.
+solaris_version=2.$(sys_rel)
 
-myprojects=binutils gcc cmake
-myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver)
-
-projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
+# The source/ directory ideally should not contain arch dependent files since
+# it is used mostly for extracting sources (an exception is the headers which
+# are arch dependent but still sources). On the other hand, our builds have
+# separate directories for each $arch
 builds=$(addprefix build/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
 
-sysdirs=/opt/gcc-$(arch)/sysroot /usr/local
-
-mydirs=build/$(arch) source $(source) $(builds) source/$(arch) source/$(arch)/root $(sysdirs)
-
+# our touch files, which indicate that specific actions have completed
+# without errors.
 make_=$(addsuffix /._.make,$(builds))
 get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
 toolchain_=$(addsuffix ._.toolchain, source/$(arch)/)
@@ -36,6 +86,9 @@ patch_=$(addsuffix /._.patch,$(builds))
 config_=$(addsuffix /._.config,$(builds))
 checkout_=$(addsuffix /._.checkout,$(builds))
 
+# Asking make not to delete any of our intermediate touch files.
+.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_) $(toolchain_)
+# -----------------------------------------------------------------------------
 ar=/usr/ccs/bin/ar
 tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
@@ -45,15 +98,40 @@ rsync=/bin/rsync
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
+# -----------------------------------------------------------------------------
+# $mydirs, and the make rule make sure that our directories are created before
+# they are needed. To make use of this, add the directory here, and in the
+# target, use `<target>: | <dirname>` incantation to ensure that the directory
+# exists. (Notice the use of '|' to ensure that our targets do not get rebuilt
+# unnecessarily)
 
-export PATH:=$(prefix)/bin:$(prefix)/$(target)/bin:/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin:/usr/perl5/5.8.4/bin
-
-.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_) $(toolchain_)
-
+sysdirs=/opt/gcc-$(arch)/sysroot /usr/local
+mydirs=source build $(source) $(builds) \
+			 build/$(arch)  source/$(arch) \
+			 source/$(arch)/root $(sysdirs)
 $(mydirs): ; mkdir -p $@
+# -----------------------------------------------------------------------------
+# some trickery to use array path elements
+e:=
+space:=$(e) $(e)
+path=$(prefix)/bin \
+		 $(prefix)/$(target)/bin \
+		 /opt/gcc-$(arch)/bin \
+		 /usr/ccs/bin \
+		 /usr/gnu/bin \
+		 /usr/bin \
+		 /bin \
+		 /sbin \
+		 /usr/sbin \
+		 /usr/sfw/bin \
+		 /usr/perl5/5.8.4/bin
 
-all: build/$(arch)/cmake-$(cmake_ver)/._.install
-	@echo $* done
+# ensure that the path is visible to our build as a shell environment variable.
+export PATH:=$(subst $(space),:,$(path))
+# -----------------------------------------------------------------------------
+
+all:
+	@echo usage: $(MAKE) arch=$(arch) cfacter
 
 source/%.tar.gz: | source
 	wget -q -c -P source/ $(sourceurl)/$*.tar.gz
@@ -135,8 +213,8 @@ build/$(arch)/%/._.install: | build/$(arch)/%/._.make
 %-toolchain: | source/%/._.toolchain source/%
 	@echo $@ done
 
-source/%/._.toolchain: | source/sol-$(solaris_ver)-%-toolchain.cmake /opt/gcc-%/
-	cp source/sol-$(solaris_ver)-$*-toolchain.cmake /opt/gcc-$*/
+source/%/._.toolchain: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
+	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
 	touch $@
 
 clean:
