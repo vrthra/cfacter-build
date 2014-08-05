@@ -33,7 +33,7 @@
 #  (and v.v. for s11).
 
 arch=i386
-sys_rel=10
+sys_rel:=$(subst 5.,,$(shell uname -r))
 binutils_ver=2.23.2
 gcc_ver=4.8.2
 cmake_ver=3.0.0
