@@ -130,6 +130,7 @@ path=$(prefix)/bin \
 export PATH:=$(subst $(space),:,$(path))
 # -----------------------------------------------------------------------------
 
+# ENTRY
 all:
 	@echo usage: $(MAKE) arch=$(arch) cfacter
 
@@ -143,6 +144,7 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
+# ENTRY
 # use `gmake arch=sparc headers` just extract the headers. The following rules
 headers: source/$(arch)/._.headers
 	@echo $@ done
@@ -167,6 +169,7 @@ build/$(arch)/%/._.install: | build/$(arch)/%/._.make
 	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
 	touch $@
 
+# ENTRY
 %-toolchain: | source/%/._.toolchain source/%
 	@echo $@ done
 
@@ -174,12 +177,21 @@ source/%/._.toolchain: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
 	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
 	touch $@
 
+# ENTRY
+# Clean out our builds. Note that we dont touch our sources which should not
+# be dirty.
 clean:
 	rm -rf build/$(arch)
 
+# ENTRY
+# Clean out the installed packages. Unfortunately, we also need to
+# redo the headers 
 clobber:
-	rm -rf /opt/gcc-sparc /opt/gcc-i386
+	rm -rf /opt/gcc-sparc /opt/gcc-i386 rm -f source/sparc/._.hinstall
 
+# ENTRY
+# This is to be the only command that requires `sudo` or root.
+# Use `sudo gmake prepare` to invoke.
 prepare:
 	rm -rf /opt/gcc-sparc /opt/gcc-i386
 	mkdir -p /opt/gcc-sparc /opt/gcc-i386 /usr/local
@@ -199,21 +211,24 @@ source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.c
 	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && $(patch) -p0)
 	touch $@
 
+# one patch for gcc too.
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
-
+# config rules for binutils
 build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_ver)/._.patch ./build/$(arch)/binutils-$(binutils_ver)
 	cd ./build/$(arch)/binutils-$(binutils_ver) && \
 		../../../source/binutils-$(binutils_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
 	touch $@
 
+# GCC depends on binutils being already installed.
 build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
 
+# The sparc cross compiler requires the sparc system headers already present.
 build/sparc/gcc-$(gcc_ver)/._.config: source/sparc/._.headers
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
@@ -267,12 +282,16 @@ build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.co
 build/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make
 	touch $@
 
+# ENTRY
 boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
 
+# ENTRY
 cross-compilers-sparc:  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
+# ENTRY
 cross-compilers-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
+# ENTRY
 cfacter: cross-compilers-$(arch) boost $(arch)-toolchain
 
