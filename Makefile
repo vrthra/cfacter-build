@@ -22,6 +22,7 @@ patch_=$(addsuffix /._.patch,$(builds))
 config_=$(addsuffix /._.config,$(builds))
 checkout_=$(addsuffix /._.checkout,$(builds))
 
+ar=/usr/ccs/bin/ar
 tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
 patch=/bin/gpatch
@@ -44,7 +45,7 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
-build/$(arch)/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
+source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
 	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && $(patch) -p0)
@@ -54,7 +55,7 @@ build/$(arch)/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ve
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
-	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites
+	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites > .x.patch.log
 	touch $@
 
 
