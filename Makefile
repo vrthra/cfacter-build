@@ -83,7 +83,7 @@ source=$(addprefix source/,$(projects))
 # without errors.
 make_=$(addsuffix /._.make,$(builds))
 get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
-toolchain_=$(addsuffix ._.toolchain, source/$(arch)/)
+toolchain_=$(addsuffix ._.cmakeenv, source/$(arch)/)
 patch_=$(addsuffix /._.patch,$(builds))
 config_=$(addsuffix /._.config,$(builds))
 checkout_=$(addsuffix /._.checkout,$(builds))
@@ -172,10 +172,10 @@ build/$(arch)/%/._.install: | build/$(arch)/%/._.make
 	touch $@
 
 # ENTRY
-%-toolchain: | source/%/._.toolchain source/%
+%-cmakeenv: | source/%/._.cmakeenv source/%
 	@echo $@ done
 
-source/%/._.toolchain: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
+source/%/._.cmakeenv: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
 	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
 	touch $@
 
@@ -296,15 +296,29 @@ boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
 
 # ENTRY
-cross-compilers-sparc:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+toolchain-sparc:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
-cross-compilers-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
+toolchain-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
 uninstall: clobber
 	rm -f source/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
-cfacter: cross-compilers-$(arch) boost $(arch)-toolchain
+# To compile native cfacter, we can just build the native cross-compiler
+# toolchain. However, to build the cross compiled sparc cfacter, we need to
+# build the native toolchain first, getting us the native cmake, and build the
+# cross compiled toolchain, and finally use both together to produce our
+# cross-compiled cfacter
+
+cfacter: cfacter-$(arch)
+
+cfacter-sparc:
+	$(MAKE) toolchain-i386
+	$(MAKE) toolchain-sparc
+
+cfacter-i386:
+	$(MAKE) toolchain-i386
+
 
