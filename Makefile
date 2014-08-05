@@ -85,10 +85,8 @@ build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch
 source/%/._.patch: | source/%/._.checkout
 	touch $@
 
-
 build/$(arch)/%/._.config: | source/%/._.patch
 	touch $@
-
 
 build/$(arch)/%/._.make: | build/$(arch)/%/._.config
 	$(MAKE)
