@@ -25,6 +25,10 @@ checkout_=$(addsuffix /._.checkout,$(builds))
 tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
 
+as=$(prefix)/bin/$(target)-as
+ld=$(prefix)/bin/$(target)-ld
+
+
 .PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_)
 
 $(mydirs): ; mkdir -p $@
@@ -37,8 +41,7 @@ source/%.tar.gz: | source
 
 build/$(arch)/%/._.checkout: | source/%.tar.gz build/$(arch)
 	cat source/$*.tar.gz | (cd build/$(arch) && $(gzip) -dc | $(tar) -xpf - )
-	@touch $@
-
+	touch $@
 
 build/$(arch)/binutils-$(binutils_ver)/._.patch: | build/$(arch)/binutils-$(binutils_ver)/._.checkout
 	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
@@ -47,16 +50,36 @@ build/$(arch)/binutils-$(binutils_ver)/._.patch: | build/$(arch)/binutils-$(binu
 	cat source/binutils-2.23.2-ldlang.c.patch | (cd build/$(arch)/binutils-$(binutils_ver)/ && patch -p0)
 	touch $@
 
+build/$(arch)/binutils-$(binutils_ver)/._.config: | build/$(arch)/binutils-$(binutils_ver)/._.patch
+	rm -rf ./build/$(arch)/binutils-$(binutils_ver)-x; mkdir -p ./build/$(arch)/binutils-$(binutils_ver)-x
+	cd ./build/$(arch)/binutils-$(binutils_ver)-x && \
+		../../../build/$(arch)/binutils-$(binutils_ver)/configure \
+			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
+	touch $@
+
+build/$(arch)/gcc-$(gcc_ver)/._.config: | build/$(arch)/gcc-$(gcc_ver)/._.patch
+	rm -rf ./build/$(arch)/gcc-$(gcc_ver)-x; mkdir -p ./build/$(arch)/gcc-$(gcc_ver)-x
+	cd ./build/$(arch)/gcc-$(gcc_ver)-x && ./contrib/download_prerequisites
+	cd ./build/$(arch)/gcc-$(gcc_ver)-x && \
+		../../../build/$(arch)/gcc-$(gcc_ver)/configure \
+			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
+			--disable-libgcj \
+			-v > .x.config.log
+	touch $@
+
+			# --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld)
+
 build/$(arch)/%/._.patch: | build/$(arch)/%/._.checkout
 	touch $@
 
 
 build/$(arch)/%/._.config: | build/$(arch)/%/._.patch
-	echo touch $@
+	touch $@
 
 
 build/$(arch)/%/._.make: | build/$(arch)/%/._.config
-	echo touch $@
+	$(MAKE)
+	touch $@
 
 
 clobber:
