@@ -134,7 +134,11 @@ export PATH:=$(subst $(space),:,$(path))
 
 # ENTRY
 all:
-	@echo usage: $(MAKE) arch=$(arch) cfacter
+	@echo "usage:\tsudo $(MAKE) prepare"
+	@echo "\t$(MAKE) arch=$(arch) cfacter"
+	@echo
+	@echo "remove:\tsudo $(MAKE) uninstall"
+
 
 # -----------------------------------------------------------------------------
 #  Generic definitions, override them to implement any specific behavior.
