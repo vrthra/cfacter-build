@@ -192,7 +192,7 @@ clobber:
 	rm -rf /opt/gcc-sparc /opt/gcc-i386 /usr/local/boost_$(boost_ver)
 
 prepare-10:
-	echo
+	@echo
 
 prepare-11:
 	pkg install developer/gcc-45
