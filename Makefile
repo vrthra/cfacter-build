@@ -133,6 +133,10 @@ export PATH:=$(subst $(space),:,$(path))
 all:
 	@echo usage: $(MAKE) arch=$(arch) cfacter
 
+# -----------------------------------------------------------------------------
+#  Generic arch independent rules. Fetches the sources, extracts them correctly
+#  and applies patches.
+
 source/%.tar.gz: | source
 	wget -q -c -P source/ $(sourceurl)/$*.tar.gz
 
@@ -140,12 +144,15 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
-%-headers: source/%/._.headers
-	@echo $@ done
-
+# extract the headers
 source/%/._.headers: | source/%.sysroot.tar.gz /opt/gcc-%/sysroot
 	cat source/$*.sysroot.tar.gz | (cd /opt/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
+
+# use `gmake arch=sparc headers` just extract the headers. The following rules
+headers: source/$(arch)/._.headers
+	@echo $@ done
+
 
 source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
