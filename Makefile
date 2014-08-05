@@ -39,27 +39,31 @@ all: $(make_)
 source/%.tar.gz: | source
 	wget -c -P source/ $(sourceurl)/$*.tar.gz
 
-build/$(arch)/%/._.checkout: | source/%.tar.gz build/$(arch)
-	cat source/$*.tar.gz | (cd build/$(arch) && $(gzip) -dc | $(tar) -xpf - )
+source/%/._.checkout: | source/%.tar.gz build/$(arch)
+	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
-build/$(arch)/binutils-$(binutils_ver)/._.patch: | build/$(arch)/binutils-$(binutils_ver)/._.checkout
+build/$(arch)/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
 	wget -c -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
-	cat source/binutils-2.23.2-common.h.patch | (cd build/$(arch)/binutils-$(binutils_ver)/include/elf && patch -p0)
-	cat source/binutils-2.23.2-ldlang.c.patch | (cd build/$(arch)/binutils-$(binutils_ver)/ && patch -p0)
+	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && patch -p0)
+	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && patch -p0)
 	touch $@
 
-build/$(arch)/binutils-$(binutils_ver)/._.config: | build/$(arch)/binutils-$(binutils_ver)/._.patch
-	rm -rf ./build/$(arch)/binutils-$(binutils_ver)-x; mkdir -p ./build/$(arch)/binutils-$(binutils_ver)-x
-	cd ./build/$(arch)/binutils-$(binutils_ver)-x && \
-		../../../build/$(arch)/binutils-$(binutils_ver)/configure \
+source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
+	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites
+	touch $@
+
+
+build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_ver)/._.patch
+	rm -rf ./build/$(arch)/binutils-$(binutils_ver); mkdir -p ./build/$(arch)/binutils-$(binutils_ver)
+	cd ./build/$(arch)/binutils-$(binutils_ver) && \
+		../../../source/binutils-$(binutils_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
 	touch $@
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | build/$(arch)/gcc-$(gcc_ver)/._.patch
 	rm -rf ./build/$(arch)/gcc-$(gcc_ver)-x; mkdir -p ./build/$(arch)/gcc-$(gcc_ver)-x
-	cd ./build/$(arch)/gcc-$(gcc_ver)-x && ./contrib/download_prerequisites
 	cd ./build/$(arch)/gcc-$(gcc_ver)-x && \
 		../../../build/$(arch)/gcc-$(gcc_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
