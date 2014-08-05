@@ -1,0 +1,45 @@
+gcc_ver=4.8.2
+gcc_=gcc-$(gcc_ver)
+projects+=$(gcc_)
+names+=gcc
+
+$(eval $(call standard_x,$(gcc_)))
+
+source/$(gcc_)/._.prereq: source/$(gcc_)/._.patch
+	(cd $(@D) && ./contrib/download_prerequisites ) $(t) $@.log
+	touch $@
+
+# extract the headers
+build/%/._.headers: fetched/%.sysroot.tar.gz | $(installroot)/%/sysroot build/%
+	cat $< | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
+	touch $@
+
+get: fetched/sparc.sysroot.tar.gz
+
+# The sparc cross compiler requires the sparc system headers already present.
+build/sparc/$(gcc_)/._.config: build/sparc/._.headers
+
+# GCC depends on binutils being already installed.
+build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
+
+build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
+	(cd $(@D) && $(rootdir)/source/$(gcc_)/configure \
+			--target=$(target) \
+			--prefix=$(prefix) \
+			$(sysroot) \
+			--disable-nls \
+			--enable-languages=c,c++ \
+			--disable-libgcj \
+			--with-gnu-as \
+			--with-as=$(as) \
+			--with-gnu-ld \
+			--with-ld=$(ld) \
+			-v \
+	) $(t) $@.log
+	touch $@
+
+compiler: gcc
+
+# ENTRY
+gcc: install-$(gcc_ver)
+	@echo $@ done

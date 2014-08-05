@@ -1,0 +1,61 @@
+#  Generic definitions, override them to implement any specific behavior.
+
+fetched/%.tar.gz: | fetched
+	$(wget) -P $(@D) $(sourceurl)/$*.tar.gz
+
+source/%/._.checkout: fetched/%.tar.gz | source/%
+	cat $< | (cd source/ && $(gzip) -dc | $(tar) -xf - )
+	touch $@
+
+# We have a few patches now. so
+source/%/._.patch: source/%/._.checkout
+	set +o pipefail; cat -s patches/$*-* | (cd $(@D) && $(patch) -p1 )
+	touch $@
+
+# we cant predict the options to be passed to config, so we only have
+# a skeletal rule here. Override them for specific projects.
+build/$(arch)/%/._.config: source/%/._.patch | build/$(arch)/%
+	touch $@
+
+# In general make should be just make
+build/$(arch)/%/._.make: build/$(arch)/%/._.config
+	(cd $(@D) && $(MAKE) ) $(t) $@.log
+	touch $@
+
+clean-%:
+	(cd build/$(arch)/$*/ && $(MAKE) clean ) $(t) $@.log
+	rm -f \
+		build/$(arch)/$*/._.config \
+		build/$(arch)/$*/._.make \
+		install/$(arch)/$*/._.install
+
+clobber-%:
+	rm -rf build/$(arch)/$* source/$*
+
+build-%: build/$(arch)/%/._.make
+	  @echo $@ done
+
+install-%: install/$(arch)/%/._.install
+	  @echo $@ done
+
+# And make install should work.
+install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
+	(cd $(<D) && $(MAKE) install ) $(t) $@.log
+	touch $@
+
+# If we want the source under build, then use this as a dependency
+build/$(arch)/%/._.sync:  source/%/._.patch | build/$(arch)/%
+	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D) && $(tar) -xf -)
+	touch $@
+
+# GMake does not honor dependency lines with pattern (%) in them
+# unless it is a make recipe. So we are stuck with having to create
+# them for each individual project using a macro hack.
+define standard_x
+fetched/$(1).tar.gz: | fetched
+source/$(1)/._.checkout: | source/$(1)
+build/$(arch)/$(1)/._.config: | build/$(arch)/$(1)
+build/$(arch)/$(1)/._.make: | build/$(arch)/$(1)
+install/$(arch)/$(1)/._.install: | install/$(arch)/$(1)
+endef
+

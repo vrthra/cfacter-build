@@ -1,0 +1,31 @@
+# We use the native cmake to build our cross-compiler, which unfortunately
+# means that we have to build the native toolchain as well
+
+compilergz=sol-$(sys_rel)-$(arch)-compiler.tar.gz
+
+update-toolchain:
+	(cd /opt/ && $(tar) -cf - $(installlabel)/$(arch) ) | $(gzip) -c > fetched/$(compilergz)
+
+gen-toolchain:
+	$(MAKE) update-toolchain arch=sparc
+	$(MAKE) update-toolchain arch=i386
+	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
+	@echo $@ done
+
+fetched/$(compilergz):
+	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/$(@F)
+	@echo $@ done
+
+fetch-toolchain-$(arch): fetched/$(compilergz)
+	cat $< | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+	$(MAKE) cmakeenv arch=$(arch)
+	@echo $@ done
+
+make-toolchain-%: install/i386/$(cmake_)/._.install install/%/$(gcc_)/._.install
+	$(MAKE) cmakeenv arch=$(arch)
+	@echo $@ done
+
+# getcompilers={fetch,make}
+toolchain: $(getcompilers)-toolchain-$(arch)
+	@echo $@ done
+

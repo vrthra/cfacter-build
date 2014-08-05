@@ -1,3 +1,0 @@
-PREFIX=/opt/gcc-sparc
-TARGET=sparc-sun-solaris2.11
-SYSROOT=$(PREFIX)/sparc-sysroot

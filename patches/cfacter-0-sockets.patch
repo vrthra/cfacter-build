@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d899cc3..e54e9b5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,6 +23,12 @@ find_package(Boost 1.54 REQUIRED COMPONENTS program_options system filesystem da
+ find_package(OPENSSL REQUIRED)
+ find_package(YAMLCPP REQUIRED)
+ 
++find_library(SOCKET_LIBRARY socket)
++if(SOCKET_LIBRARY)
++  SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${SOCKET_LIBRARY})
++  LINK_LIBRARIES(socket)
++endif()
++
+ # Set RPATH if not installing to a system library directory
+ list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" INSTALL_IS_SYSTEM_DIR)
+ if ("${INSTALL_IS_SYSTEM_DIR}" STREQUAL "-1")

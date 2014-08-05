@@ -1,3 +1,0 @@
-PREFIX=/opt/gcc-i386
-TARGET=i386-pc-solaris2.11
-SYSROOT=

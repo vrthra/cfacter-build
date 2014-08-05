@@ -1,0 +1,49 @@
+boost_ver=1_55_0
+boost_=boost_$(boost_ver)
+projects+=$(boost_)
+names+=boost
+
+$(eval $(call standard_x,$(boost_)))
+
+fetched/$(boost_).tar.gz:
+	$(wget) -P $(@D) 'http://iweb.dl.sourceforge.net/project/boost/boost/1.55.0/$(boost_).tar.gz'
+
+userconfig='using gcc : $(gcc_ver) : $(gccpath)/bin/$(target)-g++ : <linkflags>"-Wl,-rpath=$(gccpath)/lib" ;'
+
+build/$(arch)/$(boost_)/._.checkout: fetched/$(boost_).tar.gz | build/$(arch)
+	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
+	touch $@
+
+build/$(arch)/$(boost_)/tools/build/v2/user-config.jam: build/$(arch)/$(boost_)/._.sync
+	echo $(userconfig) > $@
+
+build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.sync build/$(arch)/$(boost_)/tools/build/v2/user-config.jam
+	(cd $(@D)/tools/build/v2 && env $(cmakepath) ./bootstrap.sh ) $(t) $@.log
+	touch $@
+
+build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config
+	(cd $(@D)/tools/build/v2 && env $(cmakepath) \
+		./b2 install --prefix=$(installroot)/$(arch) toolset=gcc --debug-configuration \
+	) $(t) $@.log
+	touch $@
+
+install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make
+	(cd build/$(arch)/$(boost_)/ && env $(cmakepath) $(installroot)/$(arch)/bin/b2 --debug-configuration \
+		--build-dir=build/$(arch)/$(boost_) \
+		--prefix=$(installroot)/$(arch) \
+		--with-filesystem \
+		--with-log \
+		--with-program_options \
+		--with-regex \
+		--with-system \
+		--with-thread \
+		--disable-icu \
+		install \
+	) $(t) $@.log
+	touch $@
+
+depends: boost
+
+# ENTRY
+boost: install-$(boost_)
+	@echo $@ done

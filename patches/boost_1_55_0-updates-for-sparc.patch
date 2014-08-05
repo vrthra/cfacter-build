@@ -1,0 +1,23 @@
+diff -Naur a/boost/predef/architecture/sparc.h b/boost/predef/architecture/sparc.h
+--- a/boost/predef/architecture/sparc.h	2013-07-31 20:46:04.000000000 -0700
++++ b/boost/predef/architecture/sparc.h	2014-08-11 13:57:25.000000000 -0700
+@@ -37,7 +37,7 @@
+ #   if !defined(BOOST_ARCH_SPARC) &&  defined(__sparcv8)
+ #       define BOOST_ARCH_SPARC BOOST_VERSION_NUMBER(8,0,0)
+ #   endif
+-#   if !defined(BOOST_ARCH_SPARC) &&
++#   if !defined(BOOST_ARCH_SPARC)
+ #       define BOOST_ARCH_SPARC BOOST_VERSION_NUMBER_AVAILABLE
+ #   endif
+ #endif
+diff -Naur a/boost/predef/other/endian.h b/boost/predef/other/endian.h
+--- a/boost/predef/other/endian.h	2013-10-14 22:23:53.000000000 -0700
++++ b/boost/predef/other/endian.h	2014-08-11 13:57:05.000000000 -0700
+@@ -142,6 +142,7 @@
+ #   include <boost/predef/architecture.h>
+ #   if BOOST_ARCH_M68K || \
+         BOOST_ARCH_PARISK || \
++        BOOST_ARCH_SPARC  || \
+         BOOST_ARCH_SYS370 || \
+         BOOST_ARCH_SYS390 || \
+         BOOST_ARCH_Z

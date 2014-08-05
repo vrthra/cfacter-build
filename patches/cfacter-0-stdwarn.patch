@@ -1,0 +1,28 @@
+https://svn.boost.org/trac/boost/ticket/8811 for -Wno-missing-field-initializers
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d899cc3..0fe6e1b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -37,7 +37,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+     # Clang warns that 'register' is deprecated; 'register' is used throughout boost, so it can't be an error yet.
+     set(FACTER_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-tautological-constant-out-of-range-compare -Wno-deprecated-register")
+ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+-    set(FACTER_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-local-typedefs -Wno-unknown-pragmas")
++    set(FACTER_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-unused-parameter -Wno-unused-local-typedefs -Wno-unknown-pragmas -Wno-missing-field-initializers -Wno-unused-variable")
+ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+ endif()
+diff --git a/lib/tests/CMakeLists.txt b/lib/tests/CMakeLists.txt
+index 7138cd6..126d074 100644
+--- a/lib/tests/CMakeLists.txt
++++ b/lib/tests/CMakeLists.txt
+@@ -6,7 +6,7 @@ find_package(Ruby)
+ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-tautological-constant-out-of-range-compare")
+ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-local-typedefs -Wno-unknown-pragmas")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-unused-parameter -Wno-unused-local-typedefs -Wno-unknown-pragmas -Wno-missing-field-initializers -Wno-unused-variable")
+ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+ endif()
