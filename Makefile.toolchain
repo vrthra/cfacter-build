@@ -35,4 +35,4 @@ install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
 	@echo $@ done
 
 toolchain: install-toolchain-$(arch)
-
+	@echo $@ done

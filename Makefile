@@ -2,7 +2,6 @@
 # This makefile is setup to build cfacter first building the
 # cross-compiler suite (binutils, cross-compilers, cmake) followed by
 # cfacter dependencies (boost, yaml, openssl)
-# deprecated: (apachelogcxx, re2)
 # Threaded dependendencies are setup loosely following the opensolaris package
 # maintainer best practices. Our directory structure is as follows
 #
@@ -122,4 +121,3 @@ $(mydirs): ; /bin/mkdir -p $@
 .PRECIOUS: $(get_) $(checkout_) $(patch_) \
 	         $(config_) $(make_) $(install_) \
 	         $(toolchain_) 
-

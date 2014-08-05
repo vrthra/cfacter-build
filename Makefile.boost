@@ -4,7 +4,7 @@ projects+=$(boost_)
 
 $(eval $(call standard_x,$(boost_)))
 
-fetched/$(openssl_).tar.gz: | source
+fetched/$(boost_).tar.gz: | source
 	$(wget) -P fetched/ 'http://iweb.dl.sourceforge.net/project/boost/boost/1.55.0/$(boost_).tar.gz'
 
 build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.gz
@@ -22,9 +22,9 @@ userconfig:
 	echo $(userconfig) > build/$(arch)/$(boost_)/user-config.jam
 
 build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch
-	cd build/$(arch)/$(boost_)/tools/build/v2 && \
+	(cd build/$(arch)/$(boost_)/tools/build/v2 && \
 		env $(cmakepath) \
-		./bootstrap.sh > .x.config
+		./bootstrap.sh ) $(t)> $@.log
 	touch $@
 
 install/$(arch)/$(boost_)/._.b2install: build/$(arch)/$(boost_)/._.checkout | install/$(arch)/$(boost_)
@@ -34,7 +34,7 @@ install/$(arch)/$(boost_)/._.b2install: build/$(arch)/$(boost_)/._.checkout | in
 	touch $@
 
 build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arch)/$(boost_)/._.b2install
-	cd build/$(arch)/$(boost_)/ && \
+	(cd build/$(arch)/$(boost_)/ && \
 		env $(cmakepath) \
 		$(installroot)/$(arch)/bin/b2 --build-dir=build/$(arch)/$(boost_) --prefix=$(installroot)/$(arch) --debug-configuration \
 		--with-filesystem \
@@ -42,7 +42,8 @@ build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arc
 		--with-program_options \
 		--with-regex \
 		--with-system \
-		install > .x.make
+		install \
+	) $(t)> $@.log
 	touch $@
 
 install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make | install/$(arch)/$(boost_)

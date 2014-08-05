@@ -13,8 +13,9 @@ source/cfacter/._.patch: source/cfacter/._.checkout
 	cat patches/cfacter-* | (cd source/cfacter && patch -p1 )
 
 build/$(arch)/cfacter/._.config: | source/cfacter/._.patch build/$(arch)/cfacter
-	cd $(rootdir)/build/$(arch)/cfacter && env $(cmakepath) $(cmake) $(rootdir)/source/cfacter
+	(cd $(rootdir)/build/$(arch)/cfacter && env $(cmakepath) $(cmake) $(rootdir)/source/cfacter) $(t)> $@.log
 
 facter-$(arch): build/$(arch)/cfacter/._.make
 
 facter: facter-$(arch)
+	@echo $@ done

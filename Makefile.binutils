@@ -5,10 +5,6 @@ projects+=$(binutils_)
 
 $(eval $(call standard_x,$(binutils_)))
 
-# we have a few extra patches for binutils, so overriding the default make rules.
-#$(wget) -P patches/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
-#$(wget) -P patches/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
-
 source/$(binutils_)/._.patch: source/$(binutils_)/._.checkout
 	cat patches/binutils-2.23.2-common.h.patch | (cd source/$(binutils_)/include/elf && $(patch) -p0)
 	cat patches/binutils-2.23.2-ldlang.c.patch | (cd source/$(binutils_)/ && $(patch) -p0)
@@ -16,13 +12,16 @@ source/$(binutils_)/._.patch: source/$(binutils_)/._.checkout
 
 # config rules for binutils
 build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch | ./build/$(arch)/$(binutils_)
-	cd $(rootdir)/build/$(arch)/$(binutils_) && \
+	(cd $(rootdir)/build/$(arch)/$(binutils_) && \
 		$(rootdir)/source/$(binutils_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \
 			$(sysroot) \
 			--disable-nls \
 			-v \
-			> .x.config.log
+	) $(t)> $@.log
 	touch $@
 
+# ENTRY
+binutils: install/$(arch)/$(binutils_)/._.install
+	@echo $@ done

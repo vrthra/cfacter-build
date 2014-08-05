@@ -67,10 +67,6 @@ fetched=$(addprefix fetched/,$(projects))
 define get_x
 get_+=$(addsuffix .tar.gz,$(addprefix fetched/,$(1)))
 endef
-define get_xx
-get_+=$(addprefix source/,$(1))
-endef
-
 define checkout_x
 checkout_+=$(addsuffix /._.checkout,$(addprefix source/,$(1)))
 endef
@@ -158,3 +154,4 @@ cmakepath_=$(gccpath)/bin \
 
 cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
 
+t=2>&1 | tee -a build.log

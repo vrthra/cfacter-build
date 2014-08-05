@@ -24,28 +24,29 @@ build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
 	touch $@
 
 build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
-	export LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib" ; \
-	export CC=$(prefix)/bin/$(target)-gcc ; \
-	export PATH=$(prefix)/bin:$$PATH ; \
-	cd build/$(arch)/$(openssl_) && ./Configure \
-		--prefix=$(prefix) \
-		--openssldir=$(prefix)/ssl \
-		shared \
-		$(openssl_target) \
-		zlib-dynamic \
-		enable-camellia \
-		enable-seed \
-		enable-tlsext \
-		enable-rfc3779 \
-		enable-cms \
-		enable-md2 \
-		no-mdc2 \
-		no-rc5 \
-		no-ec2m \
-		no-gost \
-		no-srp \
-		no-ssl2 \
-		> .openssl.config.log
+	(cd build/$(arch)/$(openssl_) && \
+		env LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib" \
+				CC=$(prefix)/bin/$(target)-gcc \
+				$(cmakepath) \
+			./Configure \
+				--prefix=$(prefix) \
+				--openssldir=$(prefix)/ssl \
+				shared \
+				$(openssl_target) \
+				zlib-dynamic \
+				enable-camellia \
+				enable-seed \
+				enable-tlsext \
+				enable-rfc3779 \
+				enable-cms \
+				enable-md2 \
+				no-mdc2 \
+				no-rc5 \
+				no-ec2m \
+				no-gost \
+				no-srp \
+				no-ssl2 \
+	) $(t)> $@.log
 	touch $@
 
 build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.config
