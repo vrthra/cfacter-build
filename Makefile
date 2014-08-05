@@ -20,11 +20,12 @@ make_=$(addsuffix /._.make,$(builds))
 get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
 patch_=$(addsuffix /._.patch,$(builds))
 config_=$(addsuffix /._.config,$(builds))
+checkout_=$(addsuffix /._.checkout,$(builds))
 
 tar=/usr/sfw/bin/gtar
 gzip=/bin/gzip
 
-.PRECIOUS: $(make_) $(get_) $(patch_) $(config_)
+.PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_)
 
 $(mydirs): ; mkdir -p $@
 
