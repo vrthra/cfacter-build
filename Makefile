@@ -30,7 +30,7 @@ patch=/bin/gpatch
 as=$(prefix)/bin/$(target)-as
 ld=$(prefix)/bin/$(target)-ld
 
-PATH=/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin
+export PATH:=$(prefix)/$(target)/bin:/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin:/usr/perl5/5.8.4/bin
 
 .PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_)
 
@@ -61,7 +61,7 @@ source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
 
 
 build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_ver)/._.patch ./build/$(arch)/binutils-$(binutils_ver)
-	@PATH=$(PATH); cd ./build/$(arch)/binutils-$(binutils_ver) && \
+	cd ./build/$(arch)/binutils-$(binutils_ver) && \
 		../../../source/binutils-$(binutils_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
 	touch $@
@@ -69,7 +69,7 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
-	@PATH=$(PATH); cd ./build/$(arch)/gcc-$(gcc_ver) && \
+	cd ./build/$(arch)/gcc-$(gcc_ver) && \
 		../../../source/gcc-$(gcc_ver)/configure \
 			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
 			--disable-libgcj \
@@ -80,7 +80,7 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build
 build/$(arch)/cmake-$(cmake_ver)/._.config: build/$(arch)/gcc-$(gcc_ver)/._.install
 
 build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-$(cmake_ver)
-	@PATH=$(PATH); cd ./build/$(arch)/cmake-$(cmake_ver) && \
+	cd ./build/$(arch)/cmake-$(cmake_ver) && \
 		env CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
 			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose > .x.config.log
 	touch $@
@@ -92,11 +92,11 @@ build/$(arch)/%/._.config: | source/%/._.patch
 	touch $@
 
 build/$(arch)/%/._.make: | build/$(arch)/%/._.config
-	@PATH=$(PATH); cd build/$(arch)/$*/ && $(MAKE) > .x.make.log
+	cd build/$(arch)/$*/ && $(MAKE) > .x.make.log
 	touch $@
 
 build/$(arch)/%/._.install: | build/$(arch)/%/._.make
-	@PATH=$(PATH); cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
+	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
 	touch $@
 
 clean:
