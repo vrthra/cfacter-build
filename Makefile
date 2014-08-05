@@ -10,7 +10,7 @@ sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris
 prefix=/opt/gcc-$(arch)
 ifeq (sparc,${arch})
 	target=sparc-sun-solaris$(solaris_version)
-	sysroot=--with-sysroot=$(prefix)/sparc-sysroot
+	sysroot=--with-sysroot=$(prefix)/sysroot
 else
 	prefix=/opt/gcc-i386
 	target=i386-pc-solaris$(solaris_version)
@@ -24,7 +24,9 @@ projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
 builds=$(addprefix build/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
 
-mydirs=build/$(arch) source $(builds)
+sysdirs=/opt/gcc-$(arch)/sysroot
+
+mydirs=build/$(arch) source $(builds) source/sparc/root $(sysdirs)
 
 make_=$(addsuffix /._.make,$(builds))
 get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
@@ -56,8 +58,12 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
 	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
-headers:
-	cat source/
+%-headers: source/%/._.headers
+	@echo $@ done
+
+source/%/._.headers: | source/%.sysroot.tar.gz /opt/gcc-%/sysroot
+	cat source/$*.sysroot.tar.gz | (cd /opt/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xpf - )
+	touch $@
 
 source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
 	wget -q -c -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
@@ -80,6 +86,8 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 	touch $@
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
+
+build/sparc/gcc-$(gcc_ver)/._.config: source/sparc/._.headers
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
 	cd ./build/$(arch)/gcc-$(gcc_ver) && \
@@ -123,8 +131,6 @@ build/$(arch)/%/._.install: | build/$(arch)/%/._.make
 clean:
 	rm -rf build/$(arch)
 
-# slightly dangerous
-
 clobber:
 	rm -rf /opt/gcc-sparc /opt/gcc-i386
 
@@ -135,3 +141,4 @@ prepare:
 
 boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
+
