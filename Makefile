@@ -31,7 +31,7 @@ patch=/bin/gpatch
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
 
-export PATH:=$(prefix)/$(target)/bin:/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin:/usr/perl5/5.8.4/bin
+export PATH:=$(prefix)/bin:$(prefix)/$(target)/bin:/opt/gcc-$(arch)/bin:/usr/ccs/bin:/usr/gnu/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/sfw/bin:/usr/perl5/5.8.4/bin
 
 .PRECIOUS: $(make_) $(get_) $(patch_) $(config_) $(checkout_)
 
@@ -80,11 +80,19 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build
 
 build/$(arch)/cmake-$(cmake_ver)/._.config: build/$(arch)/gcc-$(gcc_ver)/._.install
 
-build/$(arch)/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-$(cmake_ver)
-	cd ./build/$(arch)/cmake-$(cmake_ver) && \
-		env CC=$(prefix)/bin/$(i386_TARGET)-gcc CXX=$(prefix)/bin/$(i386_TARGET)-g++" MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
-			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) --mandir=/share/man --verbose > .x.config.log
+build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/i386/cmake-$(cmake_ver)
+	cd ./build/i386/cmake-$(cmake_ver) && env CC=$(prefix)/bin/gcc \
+		    CXX=$(prefix)/bin/g++ \
+		    MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" \
+				LD_LIBRARY_PATH="$(prefix)/lib" \
+				LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
+			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) \
+			    --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) \
+					--mandir=/share/man --verbose > .x.config.log
 	touch $@
+
+build/sparc/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-$(cmake_ver)
+	echo "Can not build cmake for sparc" && exit 1
 
 source/%/._.patch: | source/%/._.checkout
 	touch $@
@@ -105,9 +113,8 @@ clean:
 
 # slightly dangerous
 
-# clobber:
-#  	[ ! -z $(prefix) ] && rm -rf $(prefix)
-
+clobber:
+	rm -rf /opt/gcc-sparc /opt/gcc-i386
 
 prepare:
 	rm -rf /opt/gcc-sparc /opt/gcc-i386
