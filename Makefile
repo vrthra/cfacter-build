@@ -12,7 +12,6 @@ ifeq (sparc,${arch})
 	target=sparc-sun-solaris$(solaris_version)
 	sysroot=--with-sysroot=$(prefix)/sysroot
 else
-	prefix=/opt/gcc-i386
 	target=i386-pc-solaris$(solaris_version)
 	sysroot=
 endif
