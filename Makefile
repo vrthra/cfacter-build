@@ -175,10 +175,12 @@ build/$(arch)/%/._.install: | build/$(arch)/%/._.make
 	touch $@
 
 # ENTRY
-%-cmakeenv: | source/%/._.cmakeenv source/%
+cmakeenv: cmakeenv-$(arch)
+
+cmakeenv-%: | source/%/._.cmakeenv source/%
 	@echo $@ done
 
-source/%/._.cmakeenv: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%/
+source/%/._.cmakeenv: | source/sol-$(sys_rel)-%-toolchain.cmake /opt/gcc-%
 	cp source/sol-$(sys_rel)-$*-toolchain.cmake /opt/gcc-$*/
 	touch $@
 
@@ -306,6 +308,8 @@ toolchain-sparc:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(g
 # ENTRY
 toolchain-i386:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
+toolchain: toolchain-$(arch)
+
 # ENTRY
 uninstall: clobber
 	rm -f source/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  build/$(arch)/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
@@ -320,8 +324,10 @@ uninstall: clobber
 cfacter: cfacter-$(arch)
 
 cfacter-sparc:
-	$(MAKE) arch=i386 toolchain-i386
-	$(MAKE) arch=sparc toolchain-sparc
+	$(MAKE) arch=i386 toolchain
+	$(MAKE) arch=i386 cmakeenv
+	$(MAKE) arch=sparc toolchain
+	$(MAKE) arch=sparc cmakeenv
 
 cfacter-i386:
 	$(MAKE) arch=i386 toolchain-i386
