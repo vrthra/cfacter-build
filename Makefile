@@ -8,7 +8,7 @@
 #
 # ./
 # ./source
-# ./source/${arch:sparc,i386}/root          -- contains sysroot headers
+# ./source/${arch:sparc,i386}.sysroot.tar.gz        -- contains sysroot headers
 # ./source/<patches>
 # ./source/$project_$version.tar.gz
 # ./source/$project_$version/								-- generated from tar.gz
@@ -73,8 +73,7 @@ sys_rel:=$(subst 5.,,$(shell uname -r))
 solaris_version=2.$(sys_rel)
 
 # The source/ directory ideally should not contain arch dependent files since
-# it is used mostly for extracting sources (an exception is the headers which
-# are arch dependent but still sources). On the other hand, our builds have
+# it is used mostly for extracting sources. On the other hand, our builds have
 # separate directories for each $arch
 builds=$(addprefix build/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
@@ -152,7 +151,7 @@ source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
 
 # ENTRY
 # use `gmake arch=sparc headers` just extract the headers. The following rules
-headers: source/$(arch)/._.headers
+headers: build/$(arch)/._.headers
 	@echo $@ done
 
 # by default we dont have any patches, so override it for projects that have
@@ -211,7 +210,7 @@ prepare: prepare-$(sys_rel)
 	chmod 777 /opt/gcc-sparc /opt/gcc-i386 /usr/local
 
 # extract the headers
-source/%/._.headers: | source/%.sysroot.tar.gz /opt/gcc-%/sysroot
+build/%/._.headers: | source/%.sysroot.tar.gz /opt/gcc-%/sysroot
 	cat source/$*.sysroot.tar.gz | (cd /opt/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xpf - )
 	touch $@
 
@@ -242,7 +241,7 @@ build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_v
 build/$(arch)/gcc-$(gcc_ver)/._.config: build/$(arch)/binutils-$(binutils_ver)/._.install
 
 # The sparc cross compiler requires the sparc system headers already present.
-build/sparc/gcc-$(gcc_ver)/._.config: source/sparc/._.headers
+build/sparc/gcc-$(gcc_ver)/._.config: build/sparc/._.headers
 
 build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
 	cd ./build/$(arch)/gcc-$(gcc_ver) && \
@@ -300,6 +299,8 @@ boost: | build/$(arch)/boost_$(boost_ver)/._.make
 	@echo done
 
 # ENTRY
+# We use the native cmake to build our cross-compiler, which unfortunately
+# means that we have to build the native toolchain aswell
 toolchain-sparc:  build/i386/cmake-$(cmake_ver)/._.install build/$(arch)/gcc-$(gcc_ver)/._.install
 
 # ENTRY
