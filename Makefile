@@ -309,14 +309,14 @@ build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.co
 	cd source/boost_$(boost_ver)/ && $(prefix)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) toolset=gcc stage
 	touch $@
 
-install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make install/$(arch)/boost_$(boost_ver)
+install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make | install/$(arch)/boost_$(boost_ver)
 	touch $@
 
 # ENTRY
 boost: | install/$(arch)/boost_$(boost_ver)/._.install
 	@echo $@ done
 
-source/yaml-cpp-$(yamlcpp_ver).tar.bz2: | source
+source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
 	$(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
 
 #source/yaml-cpp-$(yamlcpp_ver)/._.checkout: | build/$(arch)/yaml-cpp-$(yamlcpp_ver) source/yaml-cpp-$(yamlcpp_ver).tar.gz
