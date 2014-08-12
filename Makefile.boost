@@ -4,6 +4,9 @@ projects+=$(boost_)
 
 $(eval $(call standard_x,$(boost_)))
 
+fetched/$(openssl_).tar.gz: | source
+	$(wget) -P fetched/ 'http://iweb.dl.sourceforge.net/project/boost/boost/1.55.0/$(boost_).tar.gz'
+
 build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.gz
 	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
