@@ -1,7 +1,7 @@
 .PRECIOUS: $(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake
 
-$(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake: source/sol-$(sys_rel)-$(arch)-toolchain.cmake | $(installroot)/$(arch)
-	cp source/sol-$(sys_rel)-$(arch)-toolchain.cmake $(installroot)/$(arch)/
+$(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake: patches/sol-$(sys_rel)-$(arch)-toolchain.cmake | $(installroot)/$(arch)
+	cp patches/sol-$(sys_rel)-$(arch)-toolchain.cmake $(installroot)/$(arch)/
 
 # ENTRY
 # We use the native cmake to build our cross-compiler, which unfortunately
