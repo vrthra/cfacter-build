@@ -41,7 +41,7 @@ all:
 # Clean out our builds. Note that we dont touch our sources which should not
 # be dirty.
 clean:
-	rm -rf build/$(arch)
+	rm -rf build install
 
 # ENTRY
 # Clean out the installed packages. Unfortunately, we also need to
@@ -89,9 +89,6 @@ get: $(get_)
 
 checkout: $(checkout_)
 	@echo $@ done
-
-test:
-	echo $(checkout_)
 
 # ENTRY
 # To compile native cfacter, we can just build the native cross-compiler
