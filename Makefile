@@ -140,8 +140,6 @@ path=$(prefix)/bin \
 
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
-export BOOST_ROOT:=$(installroot)/boost_$(boost_ver)
-export YAMLCPP_ROOT=/opt/pl-build
 # -----------------------------------------------------------------------------
 
 # ENTRY
@@ -301,13 +299,13 @@ cfacter-sparc:
 	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=sparc cmakeenv
 	$(MAKE) arch=i386 deps
-	$(MAKE) arch=i386 facter
+	$(MAKE) BOOST_ROOT=$(BOOST_ROOT) arch=i386 facter
 
 cfacter-i386:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=i386 cmakeenv
 	$(MAKE) arch=i386 deps
-	$(MAKE) arch=i386 facter
+	$(MAKE)  BOOST_ROOT=$(BOOST_ROOT) arch=i386 facter
 
 
 

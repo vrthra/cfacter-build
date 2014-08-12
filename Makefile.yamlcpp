@@ -1,6 +1,8 @@
 yamlcpp_ver=0.5.1
 projects+=yaml-cpp-$(yamlcpp_ver)
 
+export YAMLCPP_ROOT=$(installroot)
+
 source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
   $(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
 
