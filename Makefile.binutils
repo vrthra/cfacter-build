@@ -6,9 +6,10 @@ projects+=$(binutils_)
 $(eval $(call standard_x,$(binutils_)))
 
 # we have a few extra patches for binutils, so overriding the default make rules.
+#$(wget) -P patches/ $(sourceurl)/patches/$(binutils_)-common.h.patch
+#$(wget) -P patches/ $(sourceurl)/patches/$(binutils_)-ldlang.c.patch
+
 source/$(binutils_)/._.patch: source/$(binutils_)/._.checkout
-	$(wget) -P patches/ $(sourceurl)/patches/$(binutils_)-common.h.patch
-	$(wget) -P patches/ $(sourceurl)/patches/$(binutils_)-ldlang.c.patch
 	cat patches/$(binutils_)-common.h.patch | (cd source/$(binutils_)/include/elf && $(patch) -p0)
 	cat patches/$(binutils_)-ldlang.c.patch | (cd source/$(binutils_)/ && $(patch) -p0)
 	touch $@
