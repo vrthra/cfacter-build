@@ -53,8 +53,8 @@ prepare-10:
 	@echo
 
 prepare-11:
-	pkg install developer/gcc-45
-	pkg install system/header
+	-pkg install developer/gcc-45
+	-pkg install system/header
 
 # ENTRY
 # This is to be the only command that requires `sudo` or root.
