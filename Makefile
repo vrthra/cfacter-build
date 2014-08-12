@@ -105,7 +105,7 @@ bzip2=/bin/bzip2
 patch=/bin/gpatch
 rsync=/bin/rsync
 wget=wget -q -c --no-check-certificate
-git=git
+git=/opt/csw/bin/git
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
@@ -140,7 +140,7 @@ path=$(prefix)/bin \
 
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
-export BOOST_ROOT:=/opt/pl-build/boost_$(boost_ver)
+export BOOST_ROOT:=$(installroot)/boost_$(boost_ver)
 export YAMLCPP_ROOT=/opt/pl-build
 # -----------------------------------------------------------------------------
 
