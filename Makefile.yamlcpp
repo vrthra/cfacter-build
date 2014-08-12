@@ -1,0 +1,21 @@
+source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
+  $(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
+
+#source/yaml-cpp-$(yamlcpp_ver)/._.checkout: | build/$(arch)/yaml-cpp-$(yamlcpp_ver) source/yaml-cpp-$(yamlcpp_ver).tar.gz
+# cat source/yaml-cpp-$(yamlcpp_ver).tar.gz | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
+# touch $@
+
+build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config: | source/yaml-cpp-$(yamlcpp_ver)/._.patch ./build/i386/yaml-cpp-$(yamlcpp_ver)
+  cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && \
+  $(cmake) -DCMAKE_TOOLCHAIN_FILE=$(installroot)/gcc-$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
+           -DCMAKE_VERBOSE_MAKEFILE=ON \
+           -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) \
+           -DBUILD_SHARED_LIBS=ON \
+           -DYAML_CPP_BUILD_TOOLS=0 ../../../source/yaml-cpp-$(yamlcpp_ver)
+
+#build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.make: | build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config
+# cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && $(gmake)
+
+# ENTRY
+yaml-cpp:| install/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.install
+
