@@ -31,18 +31,13 @@
 
 
 arch=i386
-binutils_ver=2.23.2
 gcc_ver=4.8.2
-cmake_ver=3.0.0
-boost_ver=1_55_0
 yamlcpp_ver=0.5.1
 # -----------------------------------------------------------------------------
 # These are the projects we are currently building. Where possible, try to
 # follow the $project-$ver format, if not, use the boost example.
 
-myprojects=binutils gcc cmake yaml-cpp
-myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver) $(yamlcpp_ver)
-projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
+projects=
 # -----------------------------------------------------------------------------
 #  These are arch dependent definitions for native and cross compilers.
 #  These should be moved to their own files, and included with
@@ -129,7 +124,7 @@ mydirs=source build install $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
 			 source/$(arch)/root $(sysdirs) \
 			 source/cfacter build/$(arch)/cfacter
-$(mydirs): ; mkdir -p $@
+$(mydirs): ; /bin/mkdir -p $@
 # -----------------------------------------------------------------------------
 # some trickery to use array path elements
 e:=
@@ -237,127 +232,6 @@ build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/gcc-%/sysroot
 	cat source/$*.sysroot.tar.gz | (cd $(installroot)/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
-
-# we have a few extra patches for binutils, so overriding the default make rules.
-source/binutils-$(binutils_ver)/._.patch: | source/binutils-$(binutils_ver)/._.checkout
-	$(wget) -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
-	$(wget) -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
-	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && $(patch) -p0)
-	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && $(patch) -p0)
-	touch $@
-
-# one patch for gcc too.
-source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
-	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
-	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
-	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
-	touch $@
-
-# config rules for binutils
-build/$(arch)/binutils-$(binutils_ver)/._.config: | source/binutils-$(binutils_ver)/._.patch ./build/$(arch)/binutils-$(binutils_ver)
-	cd ./build/$(arch)/binutils-$(binutils_ver) && \
-		../../../source/binutils-$(binutils_ver)/configure \
-			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
-	touch $@
-
-# GCC depends on binutils being already installed.
-build/$(arch)/gcc-$(gcc_ver)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
-
-# The sparc cross compiler requires the sparc system headers already present.
-build/sparc/gcc-$(gcc_ver)/._.config: build/sparc/._.headers
-
-build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
-	cd ./build/$(arch)/gcc-$(gcc_ver) && \
-		../../../source/gcc-$(gcc_ver)/configure \
-			--target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
-			--disable-libgcj \
-			--with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld) \
-			-v > .x.config.log
-	touch $@
-
-build/$(arch)/cmake-$(cmake_ver)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
-
-build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/i386/cmake-$(cmake_ver)
-	cd ./build/i386/cmake-$(cmake_ver) && env CC=$(prefix)/bin/gcc \
-		    CXX=$(prefix)/bin/g++ \
-		    MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" \
-				LD_LIBRARY_PATH="$(prefix)/lib" \
-				LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \
-			../../../source/cmake-$(cmake_ver)/bootstrap --prefix=$(prefix) \
-			    --datadir=/share/cmake --docdir=/share/doc/cmake-$(cmake_ver) \
-					--mandir=/share/man --verbose > .x.config.log
-	touch $@
-
-build/sparc/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-$(cmake_ver)
-	echo "Can not build cmake for sparc" && exit 1
-
-source/boost_$(boost_ver).tar.bz2: | source
-	$(wget) -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
-
-build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) source/boost_$(boost_ver).tar.bz2
-	cat source/boost_$(boost_ver).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
-	touch $@
-
-#/opt/pl-build/gcc-i386/bin/i386-pc-solaris2.10-gcc
-build/sparc/boost_$(boost_ver)/._.patch: build/sparc/boost_$(boost_ver)/._.checkout
-	echo 'using gcc : 4.8.2 : /opt/pl-build/gcc-sparc/bin/$(call mytarget,sparc)-g++ :<linkflags>\"-Wl,-rpath=/opt/gcc-sparc/lib\";' > build/sparc/boost_$(boost_ver)/user-config.jam
-	touch $@
-
-build/i386/boost_$(boost_ver)/._.patch: build/i386/boost_$(boost_ver)/._.checkout
-	echo 'using gcc : 4.8.2 : /opt/pl-build/gcc-i386/bin/$(call mytarget,i386)-g++ :<linkflags>\"-Wl,-rpath=/opt/gcc-i386/lib\";' > build/i386/boost_$(boost_ver)/user-config.jam
-	touch $@
-
-
-install/._.boost_$(boost_ver)-hinstall: | $(installroot) install
-	cat source/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
-	touch $@
-
-build/$(arch)/boost_$(boost_ver)/._.config: build/$(arch)/boost_$(boost_ver)/._.patch build/$(arch) install/._.boost_$(boost_ver)-hinstall
-	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./bootstrap.sh
-	touch $@
-
-install/$(arch)/boost_$(boost_ver)/._.b2install: build/$(arch)/boost_$(boost_ver)/._.checkout | install/$(arch)/boost_$(boost_ver)
-	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(installroot)/gcc-$(arch) toolset=gcc --debug-configuration
-	touch $@
-
-build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config install/$(arch)/boost_$(boost_ver)/._.b2install
-	cd build/$(arch)/boost_$(boost_ver)/ && $(installroot)/gcc-$(arch)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) --prefix=$(installroot)/gcc-$(arch) --debug-configuration \
-		--with-filesystem \
-		--with-log \
-		--with-program_options \
-		--with-regex \
-		--with-system \
-		install
-	touch $@
-
-install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make | install/$(arch)/boost_$(boost_ver)
-	touch $@
-
-# ENTRY
-boost: | install/$(arch)/boost_$(boost_ver)/._.install
-	@echo $@ done
-
-source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
-	$(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
-
-#source/yaml-cpp-$(yamlcpp_ver)/._.checkout: | build/$(arch)/yaml-cpp-$(yamlcpp_ver) source/yaml-cpp-$(yamlcpp_ver).tar.gz
-#	cat source/yaml-cpp-$(yamlcpp_ver).tar.gz | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
-#	touch $@
-
-build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config: | source/yaml-cpp-$(yamlcpp_ver)/._.patch ./build/i386/yaml-cpp-$(yamlcpp_ver)
-	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && \
-	$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(installroot)/gcc-$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
-	         -DCMAKE_VERBOSE_MAKEFILE=ON \
-	         -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) \
-	         -DBUILD_SHARED_LIBS=ON \
-	         -DYAML_CPP_BUILD_TOOLS=0 ../../../source/yaml-cpp-$(yamlcpp_ver)
-
-#build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.make: | build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config
-#	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && $(gmake)
-
-# ENTRY
-yaml-cpp:| install/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.install
-
 # ENTRY
 # We use the native cmake to build our cross-compiler, which unfortunately
 # means that we have to build the native toolchain aswell
@@ -436,4 +310,10 @@ cfacter-i386:
 	$(MAKE) arch=i386 deps
 	$(MAKE) arch=i386 facter
 
+
+include Makefile.binutils
+include Makefile.gcc
+include Makefile.cmak
+include Makefile.boost
+include Makefile.yamlcpp
 

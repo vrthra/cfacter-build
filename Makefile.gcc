@@ -1,0 +1,29 @@
+gcc_ver=4.8.2
+projects+=gcc-$(gcc_ver)
+
+source/gcc-contrib-4.8.3.patch: source
+	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
+
+# one patch for gcc too.
+source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
+	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
+	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
+	touch $@
+
+
+# GCC depends on binutils being already installed.
+build/$(arch)/gcc-$(gcc_ver)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
+
+# The sparc cross compiler requires the sparc system headers already present.
+build/sparc/gcc-$(gcc_ver)/._.config: build/sparc/._.headers
+
+build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
+	cd ./build/$(arch)/gcc-$(gcc_ver) && \
+	  ../../../source/gcc-$(gcc_ver)/configure \
+	    --target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
+	    --disable-libgcj \
+	    --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld) \
+	    -v > .x.config.log
+	touch $@
+
+
