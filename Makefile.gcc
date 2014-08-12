@@ -4,12 +4,12 @@ projects+=$(gcc_)
 
 $(eval $(call standard_x,$(gcc_)))
 
-source/gcc-contrib-4.8.3.patch: source
-	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
+patches/gcc-contrib-4.8.3.patch: source
+	$(wget) -P patches/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 
 # one patch for gcc too.
 source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
-	cat source/gcc-contrib-4.8.3.patch | (cd ./source/$(gcc_) && $(patch) -p1 )
+	cat patches/gcc-contrib-4.8.3.patch | (cd ./source/$(gcc_) && $(patch) -p1 )
 	cd ./source/$(gcc_) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
@@ -17,8 +17,8 @@ source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
 # extract the headers
-build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/%/sysroot
-	cat source/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
+build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot
+	cat fetched/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 # The sparc cross compiler requires the sparc system headers already present.

@@ -6,8 +6,8 @@ $(eval $(call standard_x,$(yamlcpp_)))
 
 export YAMLCPP_ROOT=$(installroot)
 
-source/$(yamlcpp_).tar.gz: | source
-	$(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
+fetched/$(yamlcpp_).tar.gz: | source
+	$(wget) -P fetched/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
 
 build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch | ./build/i386/$(yamlcpp_)
 	cd build/$(arch)/$(yamlcpp_) && \

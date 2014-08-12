@@ -6,7 +6,7 @@ $(eval $(call standard_x,$(boost_)))
 
 export BOOST_ROOT:=$(installroot)/boost_$(boost_ver)
 
-build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) source/boost_$(boost_ver).tar.bz2
+build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) fetched/boost_$(boost_ver).tar.bz2
 	cat source/boost_$(boost_ver).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
@@ -15,7 +15,7 @@ build/$(arch)/boost_$(boost_ver)/._.patch: build/$(arch)/boost_$(boost_ver)/._.c
 	touch $@
 
 install/._.boost_$(boost_ver)-hinstall: | $(installroot) install
-	cat source/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
+	cat fetched/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
 build/$(arch)/boost_$(boost_ver)/._.config: build/$(arch)/boost_$(boost_ver)/._.patch build/$(arch) install/._.boost_$(boost_ver)-hinstall

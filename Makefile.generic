@@ -1,11 +1,11 @@
 # -----------------------------------------------------------------------------
 #  Generic definitions, override them to implement any specific behavior.
 
-source/%.tar.gz: | source
-	$(wget) -P source/ $(sourceurl)/$*.tar.gz
+fetched/%.tar.gz: | fetched
+	$(wget) -P fetched/ $(sourceurl)/$*.tar.gz
 
 source/%/._.checkout: | source/%.tar.gz build/$(arch)/%
-	cat source/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
+	cat fetched/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 # ENTRY

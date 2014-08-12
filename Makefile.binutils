@@ -7,10 +7,10 @@ $(eval $(call standard_x,$(binutils_)))
 
 # we have a few extra patches for binutils, so overriding the default make rules.
 source/$(binutils_)/._.patch: source/$(binutils_)/._.checkout
-	$(wget) -P source/ $(sourceurl)/patches/$(binutils_)-common.h.patch
-	$(wget) -P source/ $(sourceurl)/patches/$(binutils_)-ldlang.c.patch
-	cat source/$(binutils_)-common.h.patch | (cd source/$(binutils_)/include/elf && $(patch) -p0)
-	cat source/$(binutils_)-ldlang.c.patch | (cd source/$(binutils_)/ && $(patch) -p0)
+	$(wget) -P patches/ $(sourceurl)/patches/$(binutils_)-common.h.patch
+	$(wget) -P patches/ $(sourceurl)/patches/$(binutils_)-ldlang.c.patch
+	cat patches/$(binutils_)-common.h.patch | (cd source/$(binutils_)/include/elf && $(patch) -p0)
+	cat patches/$(binutils_)-ldlang.c.patch | (cd source/$(binutils_)/ && $(patch) -p0)
 	touch $@
 
 # config rules for binutils

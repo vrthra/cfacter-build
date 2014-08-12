@@ -58,12 +58,13 @@ export getcompilers
 builds=$(addprefix build/$(arch)/,$(projects)) 
 installs=$(addprefix install/$(arch)/,$(projects)) 
 source=$(addprefix source/,$(projects))
+fetched=$(addprefix fetched/,$(projects))
 
 # our touch files, which indicate that specific actions have completed
 # without errors.
 
 define get_x =
-get_+=$(addsuffix .tar.gz,$(addprefix source/,$(1)))
+get_+=$(addsuffix .tar.gz,$(addprefix fetched/,$(1)))
 endef
 define get_xx =
 get_+=$(addprefix source/,$(1))
@@ -117,7 +118,7 @@ cmake=$(installroot)/i386/bin/cmake
 # unnecessarily)
 
 sysdirs=$(installroot)/$(arch)/sysroot
-mydirs=source build install $(source) $(builds) $(installs) \
+mydirs=source build install fetched $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
 			 source/$(arch)/root $(sysdirs) \
 			 source/cfacter build/$(arch)/cfacter

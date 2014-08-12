@@ -14,10 +14,10 @@ update-toolchain:
 	(cd /opt/ && $(tar) -cf - $(installlabel)/sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
 	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > source/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
 
-source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
-	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
+fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
+	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 
-$(installroot)/$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
+$(installroot)/$(arch)/bin/$(target)-gcc: | fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 	@echo start $@
 	cat source/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo done $@
