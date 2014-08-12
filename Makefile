@@ -71,7 +71,7 @@ include Makefile.generic
 # compiler suite
 include Makefile.binutils
 include Makefile.gcc
-include Makefile.cmak
+include Makefile.cmake
 
 # Dependencies
 include Makefile.boost
