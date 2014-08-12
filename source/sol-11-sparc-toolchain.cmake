@@ -5,12 +5,12 @@ SET(CMAKE_SYSTEM_VERSION 5.11)
 SET(CMAKE_SYSTEM_PROCESSOR sparc)
 
 # specify the cross compiler
-SET(PL_TOOLS_ROOT /opt/gcc-sparc)
+SET(PL_TOOLS_ROOT /opt/pl-build-tools/${CMAKE_SYSTEM_PROCESSOR})
 SET(CMAKE_C_COMPILER     ${PL_TOOLS_ROOT}/bin/sparc-sun-solaris2.11-gcc)
 SET(CMAKE_CXX_COMPILER   ${PL_TOOLS_ROOT}/bin/sparc-sun-solaris2.11-g++)
 
 # where is the target environment
-SET(CMAKE_FIND_ROOT_PATH  /opt/gcc-sparc)
+SET(CMAKE_FIND_ROOT_PATH  ${PL_TOOLS_ROOT})
 
 # search for programs in the build host directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
