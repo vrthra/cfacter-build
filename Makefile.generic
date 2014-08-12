@@ -29,8 +29,7 @@ build/$(arch)/%/._.make: build/$(arch)/%/._.config
 	touch $@
 
 # And make install should work.
-install/$(arch)/%/._.install: build/$(arch)/%/._.make
-	mkdir -p install/$(arch)/%
+install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
 	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
 	touch $@
 

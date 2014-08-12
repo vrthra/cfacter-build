@@ -28,10 +28,6 @@
 # Global definitions.
 include Makefile.global
 # -----------------------------------------------------------------------------
-# Asking make not to delete any of our intermediate touch files.
-.PRECIOUS: $(get_) $(checkout_) $(patch_) \
-	         $(config_) $(make_) $(install_) \
-	         $(toolchain_) 
 
 # ENTRY
 all:
@@ -123,4 +119,9 @@ cfacter-i386:
 	$(MAKE) arch=i386 facter
 
 $(mydirs): ; /bin/mkdir -p $@
+
+# Asking make not to delete any of our intermediate touch files.
+.PRECIOUS: $(get_) $(checkout_) $(patch_) \
+	         $(config_) $(make_) $(install_) \
+	         $(toolchain_) 
 
