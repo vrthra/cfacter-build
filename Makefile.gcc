@@ -1,8 +1,10 @@
 gcc_ver=4.8.2
 
+source/gcc-contrib-4.8.3.patch: source
+	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
+
 # one patch for gcc too.
 source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
-	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
