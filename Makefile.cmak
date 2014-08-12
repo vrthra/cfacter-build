@@ -1,3 +1,6 @@
+cmake_ver=3.0.0
+projects+=cmake-$(cmake_ver)
+
 build/$(arch)/cmake-$(cmake_ver)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
 
 build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/i386/cmake-$(cmake_ver)

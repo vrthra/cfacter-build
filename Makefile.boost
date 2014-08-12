@@ -1,3 +1,6 @@
+boost_ver=1_55_0
+projects+=boost_$(boost_ver)
+
 source/boost_$(boost_ver).tar.bz2: | source
 	$(wget) -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
 

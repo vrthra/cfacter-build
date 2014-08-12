@@ -31,18 +31,13 @@
 
 
 arch=i386
-binutils_ver=2.23.2
 gcc_ver=4.8.2
-cmake_ver=3.0.0
-boost_ver=1_55_0
 yamlcpp_ver=0.5.1
 # -----------------------------------------------------------------------------
 # These are the projects we are currently building. Where possible, try to
 # follow the $project-$ver format, if not, use the boost example.
 
-myprojects=binutils gcc cmake yaml-cpp
-myversions=$(binutils_ver) $(gcc_ver) $(cmake_ver) $(yamlcpp_ver)
-projects=$(join $(addsuffix -,$(myprojects)),$(myversions)) boost_$(boost_ver)
+projects=
 # -----------------------------------------------------------------------------
 #  These are arch dependent definitions for native and cross compilers.
 #  These should be moved to their own files, and included with
