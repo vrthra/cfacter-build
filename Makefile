@@ -88,6 +88,15 @@ include Makefile.toolchain
 include Makefile.facter
 
 # ENTRY
+get:
+	echo $(get_)
+	@echo $@ done
+
+checkout: $(checkout_)
+	echo $(checkout_)
+	@echo $@ done
+
+# ENTRY
 # To compile native cfacter, we can just build the native cross-compiler
 # toolchain. However, to build the cross compiled sparc cfacter, we need to
 # build the native toolchain first, getting us the native cmake, and build the

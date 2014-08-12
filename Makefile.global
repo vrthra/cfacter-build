@@ -61,13 +61,40 @@ source=$(addprefix source/,$(projects))
 
 # our touch files, which indicate that specific actions have completed
 # without errors.
-make_=$(addsuffix /._.make,$(builds))
-get_=$(addsuffix .tar.gz,$(addprefix source/,$(projects)))
+
+define get_x =
+get_+=$(addsuffix .tar.gz,$(addprefix source/,$(1)))
+endef
+define get_xx =
+get_+=$(addprefix source/,$(1))
+endef
+
+define checkout_x =
+checkout_=$(addsuffix /._.checkout,$(addprefix source/,$(1)))
+endef
+define patch_x =
+checkout_=$(addsuffix /._.patch,$(addprefix source/,$(1)))
+endef
+define config_x =
+config_=$(addsuffix /._.config,$(addprefix build/$(arch)/,$(1)))
+endef
+define make_x =
+config_=$(addsuffix /._.make,$(addprefix build/$(arch)/,$(1)))
+endef
+define install_x =
+config_=$(addsuffix /._.install,$(addprefix install/$(arch)/,$(1)))
+endef
+
+define standard_x =
+$(eval $(call get_x,$(1)))
+$(eval $(call checkout_x,$(1)))
+$(eval $(call patch_x,$(1)))
+$(eval $(call config_x,$(1)))
+$(eval $(call make_x,$(1)))
+$(eval $(call install_x,$(1)))
+endef
+
 toolchain_=$(addsuffix ._.cmakeenv, source/$(arch)/)
-patch_=$(addsuffix /._.patch,$(builds))
-config_=$(addsuffix /._.config,$(builds))
-checkout_=$(addsuffix /._.checkout,$(builds))
-install_=$(addsuffix /._.install,$(installs))
 
 # -----------------------------------------------------------------------------
 ar=/usr/ccs/bin/ar

@@ -1,20 +1,22 @@
 binutils_ver=2.23.2
+binutils_=binutils-$(binutils_ver)
 
-projects+=binutils-$(binutils_ver)
+projects+=$(binutils_)
+
+$(eval $(call standard_x,$(binutils_)))
 
 # we have a few extra patches for binutils, so overriding the default make rules.
-source/binutils-$(binutils_ver)/._.patch: source/binutils-$(binutils_ver)/._.checkout
-	$(wget) -P source/ $(sourceurl)/patches/binutils-2.23.2-common.h.patch
-	$(wget) -P source/ $(sourceurl)/patches/binutils-2.23.2-ldlang.c.patch
-	cat source/binutils-2.23.2-common.h.patch | (cd source/binutils-$(binutils_ver)/include/elf && $(patch) -p0)
-	cat source/binutils-2.23.2-ldlang.c.patch | (cd source/binutils-$(binutils_ver)/ && $(patch) -p0)
+source/$(binutils_)/._.patch: source/$(binutils_)/._.checkout
+	$(wget) -P source/ $(sourceurl)/patches/$(binutils_)-common.h.patch
+	$(wget) -P source/ $(sourceurl)/patches/$(binutils_)-ldlang.c.patch
+	cat source/$(binutils_)-common.h.patch | (cd source/$(binutils_)/include/elf && $(patch) -p0)
+	cat source/$(binutils_)-ldlang.c.patch | (cd source/$(binutils_)/ && $(patch) -p0)
 	touch $@
 
-
 # config rules for binutils
-build/$(arch)/binutils-$(binutils_ver)/._.config: source/binutils-$(binutils_ver)/._.patch | ./build/$(arch)/binutils-$(binutils_ver)
-	cd ./build/$(arch)/binutils-$(binutils_ver) && \
-	   ../../../source/binutils-$(binutils_ver)/configure \
+build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch | ./build/$(arch)/$(binutils_)
+	cd ./build/$(arch)/$(binutils_) && \
+	   ../../../source/$(binutils_)/configure \
 	   --target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls -v > .x.config.log
 	touch $@
 

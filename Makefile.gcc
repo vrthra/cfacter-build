@@ -1,17 +1,20 @@
 gcc_ver=4.8.2
-projects+=gcc-$(gcc_ver)
+gcc_=gcc-$(gcc_ver)
+projects+=$(gcc_)
+
+$(eval $(call standard_x,$(gcc_)))
 
 source/gcc-contrib-4.8.3.patch: source
 	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 
 # one patch for gcc too.
-source/gcc-$(gcc_ver)/._.patch: source/gcc-$(gcc_ver)/._.checkout
-	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
-	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
+source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
+	cat source/gcc-contrib-4.8.3.patch | (cd ./source/$(gcc_) && $(patch) -p1 )
+	cd ./source/$(gcc_) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
 # GCC depends on binutils being already installed.
-build/$(arch)/gcc-$(gcc_ver)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
+build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
 # extract the headers
 build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/%/sysroot
@@ -19,16 +22,16 @@ build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/%/sysroot
 	touch $@
 
 # The sparc cross compiler requires the sparc system headers already present.
-build/sparc/gcc-$(gcc_ver)/._.config: build/sparc/._.headers
+build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 
-build/$(arch)/gcc-$(gcc_ver)/._.config: source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
-	cd ./build/$(arch)/gcc-$(gcc_ver) && \
-	  ../../../source/gcc-$(gcc_ver)/configure \
+build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch ./build/$(arch)/$(gcc_)
+	cd ./build/$(arch)/$(gcc_) && \
+	  ../../../source/$(gcc_)/configure \
 	    --target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
 	    --disable-libgcj \
 	    --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld) \
 	    -v > .x.config.log
 	touch $@
 
-#install/$(arch)/gcc-$(gcc_ver)/._.install: | build/$(arch)/gcc-$(gcc_ver)/._.make install/$(arch)/gcc-$(gcc_ver)
+#install/$(arch)/$(gcc_)/._.install: | build/$(arch)/$(gcc_)/._.make install/$(arch)/$(gcc_)
 #	touch $@

@@ -1,27 +1,30 @@
 yamlcpp_ver=0.5.1
-projects+=yaml-cpp-$(yamlcpp_ver)
+yamlcpp_=yaml-cpp-$(yamlcpp_ver)
+projects+=$(yamlcpp_)
+
+$(eval $(call standard_x,$(yamlcpp_)))
 
 export YAMLCPP_ROOT=$(installroot)
 
-source/yaml-cpp-$(yamlcpp_ver).tar.gz: | source
+source/$(yamlcpp_).tar.gz: | source
   $(wget) -P source/ 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
 
-#source/yaml-cpp-$(yamlcpp_ver)/._.checkout: | build/$(arch)/yaml-cpp-$(yamlcpp_ver) source/yaml-cpp-$(yamlcpp_ver).tar.gz
-# cat source/yaml-cpp-$(yamlcpp_ver).tar.gz | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
+#source/$(yamlcpp_)/._.checkout: | build/$(arch)/$(yamlcpp_) source/$(yamlcpp_).tar.gz
+# cat source/$(yamlcpp_).tar.gz | (cd source/ && $(bzip2) -dc | $(tar) -xf - )
 # touch $@
 
-build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config: source/yaml-cpp-$(yamlcpp_ver)/._.patch | ./build/i386/yaml-cpp-$(yamlcpp_ver)
-	cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && \
+build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch | ./build/i386/$(yamlcpp_)
+	cd build/$(arch)/$(yamlcpp_) && \
 	$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
 	         -DCMAKE_VERBOSE_MAKEFILE=ON \
 	         -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) \
 	         -DBUILD_SHARED_LIBS=ON \
-	         -DYAML_CPP_BUILD_TOOLS=0 ../../../source/yaml-cpp-$(yamlcpp_ver)
+	         -DYAML_CPP_BUILD_TOOLS=0 ../../../source/$(yamlcpp_)
 	touch $@
 
-#build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.make: | build/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.config
-# cd build/$(arch)/yaml-cpp-$(yamlcpp_ver) && $(gmake)
+#build/$(arch)/$(yamlcpp_)/._.make: | build/$(arch)/$(yamlcpp_)/._.config
+# cd build/$(arch)/$(yamlcpp_) && $(gmake)
 
 # ENTRY
-yaml-cpp: install/$(arch)/yaml-cpp-$(yamlcpp_ver)/._.install
+yaml-cpp: install/$(arch)/$(yamlcpp_)/._.install
 
