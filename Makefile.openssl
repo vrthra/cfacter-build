@@ -1,0 +1,53 @@
+openssl_ver=1.0.0m
+openssl_=openssl-$(openssl_ver)
+projects+=$(openssl_)
+
+$(eval $(call standard_x,$(openssl_)))
+
+fetched/$(openssl_).tar.gz: | source
+	$(wget) -P fetched/ 'https://www.openssl.org/source/$(openssl_).tar.gz'
+
+build/$(arch)/$(openssl_)/._.checkout: | build/$(arch) fetched/$(openssl_).tar.bz2
+	cat source/$(openssl_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
+	touch $@
+
+build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
+	cat patches/openssl-1.0.0l-use-gcc-instead-of-makedepend.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
+	cat patches/openssl_1.0.0m_fix_include.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
+	touch $@
+
+build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
+	export LDFLAGS="-L $(installroot)/$(arch)/lib -Wl,-rpath-link, $(installroot)/$(arch)/lib -Wl,-rpath, $(installroot)/$(arch)/lib"
+	export CC=/opt/gcc-sparc/bin/sparc-sun-solaris2.11-gcc
+	export PATH=/opt/gcc-sparc/bin:$$PATH
+	cd build/$(arch)/$(openssl_) && ./Configure \
+		--prefix=$(installroot)/$(arch) \
+		--openssldir=$(installroot)/$(arch)/ssl \
+		shared \
+		solaris-sparcv9-gcc \
+		zlib-dynamic \
+		enable-camellia \
+		enable-seed \
+		enable-tlsext \
+		enable-rfc3779 \
+		enable-cms \
+		enable-md2 \
+		no-mdc2 \
+		no-rc5 \
+		no-ec2m \
+		no-gost \
+		no-srp \
+		no-ssl2
+	touch $@
+
+build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.config
+	cd build/$(arch)/$(openssl_) && $(MAKE) depend && $(MAKE)
+	touch $@
+
+install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make | install/$(arch)/$(openssl_)
+	cd build/$(arch)/$(openssl_) && $(MAKE) install
+	touch $@
+
+# ENTRY
+openssl: install/$(arch)/$(openssl_)/._.install
+	@echo $@ done
