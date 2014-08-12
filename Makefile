@@ -122,7 +122,6 @@ mydirs=source build install $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
 			 source/$(arch)/root $(sysdirs) \
 			 source/cfacter build/$(arch)/cfacter
-$(mydirs): ; /bin/mkdir -p $@
 # -----------------------------------------------------------------------------
 # some trickery to use array path elements
 e:=
@@ -230,6 +229,12 @@ build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/%/sysroot
 	cat source/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
+include Makefile.binutils
+include Makefile.gcc
+include Makefile.cmak
+include Makefile.boost
+include Makefile.yamlcpp
+
 # ENTRY
 # We use the native cmake to build our cross-compiler, which unfortunately
 # means that we have to build the native toolchain aswell
@@ -309,9 +314,5 @@ cfacter-i386:
 	$(MAKE) arch=i386 facter
 
 
-include Makefile.binutils
-include Makefile.gcc
-include Makefile.cmak
-include Makefile.boost
-include Makefile.yamlcpp
 
+$(mydirs): ; /bin/mkdir -p $@
