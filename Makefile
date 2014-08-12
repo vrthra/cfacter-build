@@ -72,67 +72,20 @@ prepare: prepare-$(sys_rel)
 # Use the generic as a template for new projects
 include Makefile.generic
 
+# compiler suite
 include Makefile.binutils
 include Makefile.gcc
 include Makefile.cmak
+
+# Dependencies
 include Makefile.boost
 include Makefile.yamlcpp
 
-.PRECIOUS: $(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake
+# Our toolchain that uses compiler suite
+include Makefile.toolchain
 
-$(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake: source/sol-$(sys_rel)-$(arch)-toolchain.cmake | $(installroot)/$(arch)
-	cp source/sol-$(sys_rel)-$(arch)-toolchain.cmake $(installroot)/$(arch)/
-
-# ENTRY
-# We use the native cmake to build our cross-compiler, which unfortunately
-# means that we have to build the native toolchain aswell
-make-toolchain-%: install/i386/cmake-$(cmake_ver)/._.install install/%/gcc-$(gcc_ver)/._.install
-	@echo $@ done
-
-update-toolchain:
-	(cd /opt/ && $(tar) -cf - $(installlabel)/i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - $(installlabel)/sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > source/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
-
-source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
-	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
-
-$(installroot)/$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
-	@echo start $@
-	cat source/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
-	@echo done $@
-
-fetch-toolchain-%: | $(installroot)/%/bin/$(call mytarget,%)-gcc
-	@echo done $@
-
-# ENTRY
-cmakeenv: $(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake 
-	@echo $@ done
-
-# fetch-toolchain-$arch && make-toolchain-$arch
-install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
-	$(MAKE) arch=$(arch) cmakeenv
-	@echo $@ done
-
-toolchain: install-toolchain-$(arch)
-
-source/cfacter/.git: | source source/cfacter
-	$(git) clone git@github.com:puppetlabs/cfacter.git source/cfacter/
-
-
-build/$(arch)/cfacter/._.config: | source/cfacter/.git build/$(arch)/cfacter
-	cd build/$(arch)/cfacter && $(cmake) ../../../source/cfacter
-
-#build/$(arch)/cfacter/._.make: build/$(arch)/cfacter/._.config
-#	cd build/$(arch)/cfacter && $(gmake)
-
-facter-i386: build/$(arch)/cfacter/._.make
-
-facter: facter-$(arch) 
-
-# ENTRY
-uninstall: clobber
-	rm -f install/sparc/._.hinstall source/boost_$(boost_ver)/._.hinstall  install/$(arch)/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
+# CFacter tha tuses dependencies
+include Makefile.facter
 
 # ENTRY
 # To compile native cfacter, we can just build the native cross-compiler
