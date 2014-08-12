@@ -5,7 +5,7 @@ SET(CMAKE_SYSTEM_VERSION 5.10)
 SET(CMAKE_SYSTEM_PROCESSOR sparc)
 
 # specify the cross compiler
-SET(PL_TOOLS_ROOT /opt/pl-build-tools/${CMAKE_SYSTEM_PROCESSORE})
+SET(PL_TOOLS_ROOT /opt/pl-build-tools/${CMAKE_SYSTEM_PROCESSOR})
 SET(CMAKE_C_COMPILER     ${PL_TOOLS_ROOT}/bin/sparc-sun-solaris2.10-gcc)
 SET(CMAKE_CXX_COMPILER   ${PL_TOOLS_ROOT}/bin/sparc-sun-solaris2.10-g++)
 
