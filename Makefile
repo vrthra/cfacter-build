@@ -94,6 +94,9 @@ get: $(get_)
 checkout: $(checkout_)
 	@echo $@ done
 
+test:
+	echo $(checkout_)
+
 # ENTRY
 # To compile native cfacter, we can just build the native cross-compiler
 # toolchain. However, to build the cross compiled sparc cfacter, we need to

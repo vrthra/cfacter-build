@@ -70,19 +70,19 @@ get_+=$(addprefix source/,$(1))
 endef
 
 define checkout_x =
-checkout_=$(addsuffix /._.checkout,$(addprefix source/,$(1)))
+checkout_+=$(addsuffix /._.checkout,$(addprefix source/,$(1)))
 endef
 define patch_x =
-checkout_=$(addsuffix /._.patch,$(addprefix source/,$(1)))
+checkout_+=$(addsuffix /._.patch,$(addprefix source/,$(1)))
 endef
 define config_x =
-config_=$(addsuffix /._.config,$(addprefix build/$(arch)/,$(1)))
+config_+=$(addsuffix /._.config,$(addprefix build/$(arch)/,$(1)))
 endef
 define make_x =
-config_=$(addsuffix /._.make,$(addprefix build/$(arch)/,$(1)))
+config_+=$(addsuffix /._.make,$(addprefix build/$(arch)/,$(1)))
 endef
 define install_x =
-config_=$(addsuffix /._.install,$(addprefix install/$(arch)/,$(1)))
+config_+=$(addsuffix /._.install,$(addprefix install/$(arch)/,$(1)))
 endef
 
 define standard_x =
