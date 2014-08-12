@@ -298,13 +298,13 @@ build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) source/boost_$(boo
 	cat source/boost_$(boost_ver).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-#/opt/pl-build/gcc-i386/bin/i386-pc-solaris2.10-gcc
+#/opt/pl-build-tools/i386/bin/i386-pc-solaris2.10-gcc
 build/sparc/boost_$(boost_ver)/._.patch: build/sparc/boost_$(boost_ver)/._.checkout
-	echo 'using gcc : 4.8.2 : /opt/pl-build/gcc-sparc/bin/$(call mytarget,sparc)-g++ :<linkflags>\"-Wl,-rpath=/opt/gcc-sparc/lib\";' > build/sparc/boost_$(boost_ver)/user-config.jam
+	echo 'using gcc : 4.8.2 : /opt/pl-build-tools/sparc/bin/$(call mytarget,sparc)-g++ : <linkflags>\"-Wl,-rpath=/opt/pl-build-tools/gcc/lib\" ;' > build/sparc/boost_$(boost_ver)/user-config.jam
 	touch $@
 
 build/i386/boost_$(boost_ver)/._.patch: build/i386/boost_$(boost_ver)/._.checkout
-	echo 'using gcc : 4.8.2 : /opt/pl-build/gcc-i386/bin/$(call mytarget,i386)-g++ :<linkflags>\"-Wl,-rpath=/opt/gcc-i386/lib\";' > build/i386/boost_$(boost_ver)/user-config.jam
+	echo 'using gcc : 4.8.2 : /opt/pl-build-tools/i386/bin/$(call mytarget,i386)-g++ : <linkflags>\"-Wl,-rpath=/opt/pl-build-tools/i386/lib\" ;' > build/i386/boost_$(boost_ver)/user-config.jam
 	touch $@
 
 
@@ -317,11 +317,11 @@ build/$(arch)/boost_$(boost_ver)/._.config: build/$(arch)/boost_$(boost_ver)/._.
 	touch $@
 
 install/$(arch)/boost_$(boost_ver)/._.b2install: build/$(arch)/boost_$(boost_ver)/._.checkout | install/$(arch)/boost_$(boost_ver)
-	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(installroot)/gcc-$(arch) toolset=gcc --debug-configuration
+	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(installroot)/$(arch) toolset=gcc --debug-configuration
 	touch $@
 
 build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config install/$(arch)/boost_$(boost_ver)/._.b2install
-	cd build/$(arch)/boost_$(boost_ver)/ && $(installroot)/gcc-$(arch)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) --prefix=$(installroot)/gcc-$(arch) --debug-configuration \
+	cd build/$(arch)/boost_$(boost_ver)/ && $(installroot)/$(arch)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) --prefix=$(installroot)/$(arch) --debug-configuration \
 		--with-filesystem \
 		--with-log \
 		--with-program_options \
@@ -375,15 +375,15 @@ make-toolchain-i386:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)
 source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
 	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 
-$(installroot)/gcc-$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
+$(installroot)/$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 	@echo start $@
 	cat source/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo done $@
 
-fetch-toolchain-i386: | $(installroot)/gcc-i386/bin/$(call mytarget,i386)-gcc
+fetch-toolchain-i386: | $(installroot)/i386/bin/$(call mytarget,i386)-gcc
 	@echo done $@
 
-fetch-toolchain-sparc: | $(installroot)/gcc-sparc/bin/$(call mytarget,sparc)-gcc
+fetch-toolchain-sparc: | $(installroot)/sparc/bin/$(call mytarget,sparc)-gcc
 	@echo done $@
 
 # fetch-toolchain-$arch && make-toolchain-$arch
