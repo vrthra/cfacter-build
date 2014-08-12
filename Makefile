@@ -48,7 +48,9 @@ define mytarget
 $(if $(findstring sparc,$(1)),sparc-sun-solaris,i386-pc-solaris)$(solaris_version)
 endef
 
-installroot=/opt/pl-build-tools
+# need the label for making tar balls.
+installlabel=pl-build-tools
+installroot=/opt/$(installlabel)
 prefix=$(installroot)/$(arch)
 target=$(call mytarget,$(arch))
 ifeq (sparc,${arch})
@@ -105,7 +107,7 @@ bzip2=/bin/bzip2
 patch=/bin/gpatch
 rsync=/bin/rsync
 wget=wget -q -c --no-check-certificate
-git=/opt/csw/bin/git
+git=git
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
@@ -136,7 +138,8 @@ path=$(prefix)/bin \
 		 /sbin \
 		 /usr/sbin \
 		 /usr/sfw/bin \
-		 /usr/perl5/5.8.4/bin
+		 /usr/perl5/5.8.4/bin \
+		 /opt/csw/bin
 
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
@@ -239,9 +242,9 @@ make-toolchain-%: install/i386/cmake-$(cmake_ver)/._.install install/%/gcc-$(gcc
 	@echo $@ done
 
 update-toolchain:
-	(cd /opt/ && $(tar) -cf - pl-build/i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - pl-build/sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - pl-build ) | $(gzip) -c > source/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
+	(cd /opt/ && $(tar) -cf - $(installlabel)/i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - $(installlabel)/sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > source/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
 
 source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
 	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
