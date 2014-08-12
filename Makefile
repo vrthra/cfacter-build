@@ -262,6 +262,7 @@ fetch-toolchain-sparc: | $(installroot)/sparc/bin/$(call mytarget,sparc)-gcc
 
 # fetch-toolchain-$arch && make-toolchain-$arch
 install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
+	$(MAKE) arch=$(arch) cmakeenv
 	@echo $@ done
 
 toolchain: install-toolchain-$(arch)
@@ -296,19 +297,18 @@ cfacter: cfacter-$(arch)
 deps: boost yaml-cpp
 	@echo $@ done
 
+# being lazy again. I promice to make them follow the dependencies correctly
+# later.
 cfacter-sparc:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=i386 cmakeenv
 	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=sparc cmakeenv
 	$(MAKE) arch=i386 deps
-	$(MAKE) BOOST_ROOT=$(BOOST_ROOT) arch=i386 facter
+	$(MAKE) arch=i386 facter
 
 cfacter-i386:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=i386 cmakeenv
 	$(MAKE) arch=i386 deps
-	$(MAKE)  BOOST_ROOT=$(BOOST_ROOT) arch=i386 facter
+	$(MAKE) arch=i386 facter
 
 
 
