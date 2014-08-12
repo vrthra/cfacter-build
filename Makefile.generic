@@ -1,0 +1,35 @@
+# -----------------------------------------------------------------------------
+#  Generic definitions, override them to implement any specific behavior.
+
+fetched/%.tar.gz: | fetched
+	$(wget) -P fetched/ $(sourceurl)/$*.tar.gz
+
+source/%/._.checkout: | fetched/%.tar.gz build/$(arch)/%
+	cat fetched/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
+	touch $@
+
+# ENTRY
+# use `gmake arch=sparc headers` just extract the headers. The following rules
+headers: build/$(arch) build/$(arch)/._.headers
+	@echo $@ done
+
+# by default we dont have any patches, so override it for projects that have
+# it.
+source/%/._.patch: source/%/._.checkout
+	touch $@
+
+# we cant predict the options to be passed to config, so we only have
+# a skeletal rule here. Override them for specific projects.
+build/$(arch)/%/._.config: source/%/._.patch
+	touch $@
+
+# In general make should be just make
+build/$(arch)/%/._.make: build/$(arch)/%/._.config
+	cd build/$(arch)/$*/ && $(MAKE) > .x.make.log
+	touch $@
+
+# And make install should work.
+install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
+	cd build/$(arch)/$*/ && $(MAKE) install > .x.install.log
+	touch $@
+
