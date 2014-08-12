@@ -31,8 +31,6 @@
 
 
 arch=i386
-gcc_ver=4.8.2
-yamlcpp_ver=0.5.1
 # -----------------------------------------------------------------------------
 # These are the projects we are currently building. Where possible, try to
 # follow the $project-$ver format, if not, use the boost example.
@@ -50,8 +48,8 @@ define mytarget
 $(if $(findstring sparc,$(1)),sparc-sun-solaris,i386-pc-solaris)$(solaris_version)
 endef
 
-installroot=/opt/pl-build
-prefix=$(installroot)/gcc-$(arch)
+installroot=/opt/pl-build-tools
+prefix=$(installroot)/$(arch)
 target=$(call mytarget,$(arch))
 ifeq (sparc,${arch})
 	sysroot=--with-sysroot=$(prefix)/sysroot
@@ -111,7 +109,7 @@ git=git
 
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
-cmake=$(installroot)/gcc-i386/bin/cmake
+cmake=$(installroot)/i386/bin/cmake
 # -----------------------------------------------------------------------------
 # $mydirs, and the make rule make sure that our directories are created before
 # they are needed. To make use of this, add the directory here, and in the
@@ -119,7 +117,7 @@ cmake=$(installroot)/gcc-i386/bin/cmake
 # exists. (Notice the use of '|' to ensure that our targets do not get rebuilt
 # unnecessarily)
 
-sysdirs=$(installroot)/gcc-$(arch)/sysroot
+sysdirs=$(installroot)/$(arch)/sysroot
 mydirs=source build install $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
 			 source/$(arch)/root $(sysdirs) \
@@ -131,7 +129,7 @@ e:=
 space:=$(e) $(e)
 path=$(prefix)/bin \
 		 $(prefix)/$(target)/bin \
-		 $(installroot)/gcc-$(arch)/bin \
+		 $(installroot)/$(arch)/bin \
 		 /usr/ccs/bin \
 		 /usr/gnu/bin \
 		 /usr/bin \
@@ -196,8 +194,8 @@ cmakeenv: cmakeenv-$(arch)
 cmakeenv-%: | source/%/._.cmakeenv source/%
 	@echo $@ done
 
-source/%/._.cmakeenv: source/sol-$(sys_rel)-%-toolchain.cmake | $(installroot)/gcc-% source/%
-	cp source/sol-$(sys_rel)-$*-toolchain.cmake $(installroot)/gcc-$*/
+source/%/._.cmakeenv: source/sol-$(sys_rel)-%-toolchain.cmake | $(installroot)/% source/%
+	cp source/sol-$(sys_rel)-$*-toolchain.cmake $(installroot)/$*/
 	touch $@
 
 # ENTRY
@@ -228,36 +226,36 @@ prepare: prepare-$(sys_rel)
 	chmod 777 $(installroot)
 
 # extract the headers
-build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/gcc-%/sysroot
-	cat source/$*.sysroot.tar.gz | (cd $(installroot)/gcc-$*/sysroot && $(gzip) -dc | $(tar) -xf - )
+build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/%/sysroot
+	cat source/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 # ENTRY
 # We use the native cmake to build our cross-compiler, which unfortunately
 # means that we have to build the native toolchain aswell
 make-toolchain-sparc:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
-	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - pl-build/gcc-sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
 	(cd /opt/ && $(tar) -cf - pl-build ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-i386-compilers.tar.gz
 	@echo $@ done
 
 # ENTRY
 make-toolchain-i386:  install/i386/cmake-$(cmake_ver)/._.install install/$(arch)/gcc-$(gcc_ver)/._.install
-	(cd /opt/ && $(tar) -cf - pl-build/gcc-i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
+	(cd /opt/ && $(tar) -cf - pl-build/i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
 	@echo $@ done
 
 source/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
 	$(wget) -P source/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 
-$(installroot)/gcc-$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
+$(installroot)/$(arch)/bin/$(target)-gcc: | source/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 	@echo start $@
 	cat source/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo done $@
 
-fetch-toolchain-i386: | $(installroot)/gcc-i386/bin/$(call mytarget,i386)-gcc
+fetch-toolchain-i386: | $(installroot)/i386/bin/$(call mytarget,i386)-gcc
 	@echo done $@
 
-fetch-toolchain-sparc: | $(installroot)/gcc-sparc/bin/$(call mytarget,sparc)-gcc
+fetch-toolchain-sparc: | $(installroot)/sparc/bin/$(call mytarget,sparc)-gcc
 	@echo done $@
 
 # fetch-toolchain-$arch && make-toolchain-$arch
