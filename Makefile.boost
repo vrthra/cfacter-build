@@ -40,5 +40,5 @@ install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/
 	touch $@
 
 # ENTRY
-boost: | install/$(arch)/boost_$(boost_ver)/._.install
+boost: install/$(arch)/boost_$(boost_ver)/._.install
 	@echo $@ done

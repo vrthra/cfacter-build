@@ -5,19 +5,23 @@ source/gcc-contrib-4.8.3.patch: source
 	$(wget) -P source/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
 
 # one patch for gcc too.
-source/gcc-$(gcc_ver)/._.patch: |  source/gcc-$(gcc_ver)/._.checkout
+source/gcc-$(gcc_ver)/._.patch: source/gcc-$(gcc_ver)/._.checkout
 	cat source/gcc-contrib-4.8.3.patch | (cd ./source/gcc-$(gcc_ver) && $(patch) -p1 )
 	cd ./source/gcc-$(gcc_ver) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
-
 # GCC depends on binutils being already installed.
 build/$(arch)/gcc-$(gcc_ver)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
+
+# extract the headers
+build/%/._.headers: | source/%.sysroot.tar.gz $(installroot)/%/sysroot
+	cat source/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
+	touch $@
 
 # The sparc cross compiler requires the sparc system headers already present.
 build/sparc/gcc-$(gcc_ver)/._.config: build/sparc/._.headers
 
-build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
+build/$(arch)/gcc-$(gcc_ver)/._.config: source/gcc-$(gcc_ver)/._.patch ./build/$(arch)/gcc-$(gcc_ver)
 	cd ./build/$(arch)/gcc-$(gcc_ver) && \
 	  ../../../source/gcc-$(gcc_ver)/configure \
 	    --target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
@@ -26,4 +30,5 @@ build/$(arch)/gcc-$(gcc_ver)/._.config: | source/gcc-$(gcc_ver)/._.patch ./build
 	    -v > .x.config.log
 	touch $@
 
-
+#install/$(arch)/gcc-$(gcc_ver)/._.install: | build/$(arch)/gcc-$(gcc_ver)/._.make install/$(arch)/gcc-$(gcc_ver)
+#	touch $@

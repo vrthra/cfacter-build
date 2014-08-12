@@ -3,7 +3,7 @@ projects+=cmake-$(cmake_ver)
 
 build/$(arch)/cmake-$(cmake_ver)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
 
-build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/i386/cmake-$(cmake_ver)
+build/i386/cmake-$(cmake_ver)/._.config: source/cmake-$(cmake_ver)/._.patch | ./build/i386/cmake-$(cmake_ver)
 	cd ./build/i386/cmake-$(cmake_ver) && env CC=$(prefix)/bin/gcc \
 	  CXX=$(prefix)/bin/g++ \
 	  MAKE=$(MAKE) CFLAGS="-I$(prefix)/include" \
@@ -14,5 +14,5 @@ build/i386/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./
 	    --mandir=/share/man --verbose > .x.config.log
 	touch $@
 
-build/sparc/cmake-$(cmake_ver)/._.config: | source/cmake-$(cmake_ver)/._.patch ./build/$(arch)/cmake-          $(cmake_ver)
+build/sparc/cmake-$(cmake_ver)/._.config: source/cmake-$(cmake_ver)/._.patch | ./build/$(arch)/cmake-$(cmake_ver)
 	echo "Can not build cmake for sparc" && exit 1
