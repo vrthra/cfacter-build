@@ -2,18 +2,9 @@ boost_ver=1_55_0
 boost_=boost_$(boost_ver)
 projects+=$(boost_)
 
-# cant call standard_x due to bz2
-$(eval $(call get_xx,$(boost_).tar.bz2))
-$(eval $(call checkout_x,$(boost_)))
-$(eval $(call patch_x,$(boost_)))
-$(eval $(call config_x,$(boost_)))
-$(eval $(call make_x,$(boost_)))
-$(eval $(call install_x,$(boost_)))
+$(eval $(call standard_x,$(boost_)))
 
 export BOOST_ROOT:=$(installroot)/boost_$(boost_ver)
-
-source/boost_$(boost_ver).tar.bz2: | source
-	$(wget) -P source/ 'http://ftp.osuosl.org/pub/blfs/svn/b/boost_$(boost_ver).tar.bz2'
 
 build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) source/boost_$(boost_ver).tar.bz2
 	cat source/boost_$(boost_ver).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )

@@ -88,12 +88,10 @@ include Makefile.toolchain
 include Makefile.facter
 
 # ENTRY
-get:
-	echo $(get_)
+get: $(get_)
 	@echo $@ done
 
 checkout: $(checkout_)
-	echo $(checkout_)
 	@echo $@ done
 
 # ENTRY
