@@ -4,30 +4,31 @@ projects+=$(boost_)
 
 $(eval $(call standard_x,$(boost_)))
 
-export BOOST_ROOT:=$(installroot)/boost_$(boost_ver)
+export BOOST_ROOT:=$(installroot)/$(boost_)
 
-build/$(arch)/boost_$(boost_ver)/._.checkout: | build/$(arch) fetched/boost_$(boost_ver).tar.bz2
-	cat source/boost_$(boost_ver).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
+build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.bz2
+	cat source/$(boost_).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.patch: build/$(arch)/boost_$(boost_ver)/._.checkout
-	echo 'using gcc : 4.8.2 : $(installroot)/$(arch)/bin/$(call mytarget,$(arch))-g++ :<linkflags>\"-Wl,-rpath=$(installroot)/$(arch)/lib\";' > build/$(arch)/boost_$(boost_ver)/user-config.jam
+build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
+	echo 'using gcc : 4.8.2 : $(installroot)/$(arch)/bin/$(call mytarget,$(arch))-g++ :<linkflags>\"-Wl,-rpath=$(installroot)/$(arch)/lib\";' > build/$(arch)/$(boost_)/user-config.jam
+	if [ $(arch) = 'sparc' ]; then cat patches/boost-1.55.0-updates-for-sparc.patch | (cd build/sparc/$(boost_) && $(patch) -p1 ); fi
 	touch $@
 
-install/._.boost_$(boost_ver)-hinstall: | $(installroot) install
-	cat fetched/boost_$(boost_ver).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
+install/._.$(boost_)-hinstall: | $(installroot) install
+	cat fetched/$(boost_).tar.bz2 | (cd $(installroot) && $(bzip2) -dc | $(tar) -xf - )
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.config: build/$(arch)/boost_$(boost_ver)/._.patch build/$(arch) install/._.boost_$(boost_ver)-hinstall
-	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./bootstrap.sh
+build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch build/$(arch) install/._.$(boost_)-hinstall
+	cd build/$(arch)/$(boost_)/tools/build/v2 && ./bootstrap.sh
 	touch $@
 
-install/$(arch)/boost_$(boost_ver)/._.b2install: build/$(arch)/boost_$(boost_ver)/._.checkout | install/$(arch)/boost_$(boost_ver)
-	cd build/$(arch)/boost_$(boost_ver)/tools/build/v2 && ./b2 install --prefix=$(installroot)/gcc-$(arch) toolset=gcc --debug-configuration
+install/$(arch)/$(boost_)/._.b2install: build/$(arch)/$(boost_)/._.checkout | install/$(arch)/$(boost_)
+	cd build/$(arch)/$(boost_)/tools/build/v2 && ./b2 install --prefix=$(installroot)/gcc-$(arch) toolset=gcc --debug-configuration
 	touch $@
 
-build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.config install/$(arch)/boost_$(boost_ver)/._.b2install
-	cd build/$(arch)/boost_$(boost_ver)/ && $(installroot)/gcc-$(arch)/bin/b2 --build-dir=build/$(arch)/boost_$(boost_ver) --prefix=$(installroot)/gcc-$(arch) --debug-configuration \
+build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arch)/$(boost_)/._.b2install
+	cd build/$(arch)/$(boost_)/ && $(installroot)/gcc-$(arch)/bin/b2 --build-dir=build/$(arch)/$(boost_) --prefix=$(installroot)/gcc-$(arch) --debug-configuration \
 		--with-filesystem \
 		--with-log \
 		--with-program_options \
@@ -36,9 +37,9 @@ build/$(arch)/boost_$(boost_ver)/._.make: build/$(arch)/boost_$(boost_ver)/._.co
 		install
 	touch $@
 
-install/$(arch)/boost_$(boost_ver)/._.install: build/$(arch)/boost_$(boost_ver)/._.make | install/$(arch)/boost_$(boost_ver)
+install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make | install/$(arch)/$(boost_)
 	touch $@
 
 # ENTRY
-boost: install/$(arch)/boost_$(boost_ver)/._.install
+boost: install/$(arch)/$(boost_)/._.install
 	@echo $@ done
