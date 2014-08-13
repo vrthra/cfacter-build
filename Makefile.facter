@@ -1,7 +1,18 @@
 source/cfacter/.git: | source source/cfacter
 	$(git) clone git@github.com:puppetlabs/cfacter.git source/cfacter/
 
-build/$(arch)/cfacter/._.config: | source/cfacter/.git build/$(arch)/cfacter
+source/cfacter/._.checkout: source/cfacter/.git
+	touch $@
+
+source/cfacter/._.patch: source/cfacter/._.checkout
+	cd source/cfacter && perl -pi -e 's#utsname #struct utsname #g' \
+		lib/inc/facter/facts/posix/kernel_resolver.hpp \
+		lib/inc/facter/facts/posix/processor_resolver.hpp \
+		lib/src/facts/posix/kernel_resolver.cc \
+		lib/src/facts/posix/processor_resolver.cc
+	cat patches/cfacter-* | (cd source/cfacter && patch -p1 )
+
+build/$(arch)/cfacter/._.config: | source/cfacter/._.patch build/$(arch)/cfacter
 	cd build/$(arch)/cfacter && env $(cmakepath) $(cmake) ../../../source/cfacter
 
 facter-$(arch): build/$(arch)/cfacter/._.make
