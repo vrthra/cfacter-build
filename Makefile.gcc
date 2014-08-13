@@ -6,8 +6,8 @@ $(eval $(call standard_x,$(gcc_)))
 
 # one patch for gcc too.
 source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
-	cat patches/gcc-contrib-4.8.2.patch | (cd ./source/$(gcc_) && $(patch) -p1 )
-	cd ./source/$(gcc_) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
+	cat patches/gcc-contrib-4.8.2.patch | (cd $(rootdir)/source/$(gcc_) && $(patch) -p1 )
+	cd $(rootdir)/source/$(gcc_) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
 # extract the headers
@@ -24,8 +24,8 @@ build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
 build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch | ./build/$(arch)/$(gcc_)
-	cd ./build/$(arch)/$(gcc_) && \
-		../../../source/$(gcc_)/configure \
+	cd $(rootdir)/build/$(arch)/$(gcc_) && \
+		$(rootdir)/source/$(gcc_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \
 			$(sysroot) \
