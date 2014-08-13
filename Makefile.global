@@ -2,6 +2,7 @@
 #  important is the arch changes whether a native compiler or a cross-compiler
 #  is built.
 
+rootdir=$(shell pwd)
 
 arch=i386
 # -----------------------------------------------------------------------------
