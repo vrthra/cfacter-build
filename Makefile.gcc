@@ -13,9 +13,6 @@ source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
 	cd ./source/$(gcc_) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
-# GCC depends on binutils being already installed.
-build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
-
 # extract the headers
 build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot
 	cat fetched/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
@@ -26,7 +23,10 @@ get: fetched/sparc.sysroot.tar.gz
 # The sparc cross compiler requires the sparc system headers already present.
 build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 
-build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch ./build/$(arch)/$(gcc_)
+# GCC depends on binutils being already installed.
+build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
+
+build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch | ./build/$(arch)/$(gcc_)
 	cd ./build/$(arch)/$(gcc_) && \
 	  ../../../source/$(gcc_)/configure \
 	    --target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
@@ -35,5 +35,3 @@ build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch ./build/$(arch)/$(gcc_)
 	    -v > .x.config.log
 	touch $@
 
-#install/$(arch)/$(gcc_)/._.install: | build/$(arch)/$(gcc_)/._.make install/$(arch)/$(gcc_)
-#	touch $@
