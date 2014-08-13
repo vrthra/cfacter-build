@@ -4,8 +4,8 @@ projects+=$(boost_)
 
 $(eval $(call standard_x,$(boost_)))
 
-build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.bz2
-	cat source/$(boost_).tar.bz2 | (cd build/$(arch)/ && $(bzip2) -dc | $(tar) -xf - )
+build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.gz
+	cat source/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
