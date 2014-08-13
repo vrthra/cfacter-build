@@ -8,9 +8,12 @@ build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.gz
 	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
+gccpath=$(installroot)/$(arch)
+userconfig='using gcc : $(gcc_ver) : $(gccpath)/bin/$(target)-g++ : <linkflags>"-Wl,-rpath=$(gccpath)/lib" ;'
+
 build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
-	echo 'using gcc : 4.8.2 : $(installroot)/$(arch)/bin/$(call mytarget,$(arch))-g++ : <linkflags>\"-Wl,-rpath=$(installroot)/$(arch)/lib\" ;' > build/$(arch)/$(boost_)/user-config.jam
-	cat patches/boost-1.55.0-updates-for-sparc.patch | (cd build/sparc/$(boost_) && $(patch) -p0 )
+	echo $(userconfig) > build/$(arch)/$(boost_)/user-config.jam
+	cat patches/boost-1.55.0-updates-for-sparc.patch | (cd build/$(arch)/$(boost_) && $(patch) -p0 )
 	touch $@
 
 build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch
