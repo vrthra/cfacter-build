@@ -16,8 +16,8 @@ source/$(binutils_)/._.patch: source/$(binutils_)/._.checkout
 
 # config rules for binutils
 build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch | ./build/$(arch)/$(binutils_)
-	cd ./build/$(arch)/$(binutils_) && \
-	   ../../../source/$(binutils_)/configure \
+	cd $(rootdir)/build/$(arch)/$(binutils_) && \
+	   $(rootdir)/source/$(binutils_)/configure \
 	   --target=$(target) \
 		 --prefix=$(prefix) \
 		 $(sysroot) \

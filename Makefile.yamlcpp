@@ -15,7 +15,7 @@ build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch | ./build/$(arc
 	         -DCMAKE_VERBOSE_MAKEFILE=ON \
 	         -DCMAKE_INSTALL_PREFIX:PATH=$(installroot) \
 	         -DBUILD_SHARED_LIBS=ON \
-	         -DYAML_CPP_BUILD_TOOLS=0 ../../../source/$(yamlcpp_)
+	         -DYAML_CPP_BUILD_TOOLS=0 $(rootdir)/source/$(yamlcpp_)
 	touch $@
 
 # ENTRY
