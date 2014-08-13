@@ -25,10 +25,18 @@ build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.ins
 
 build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch | ./build/$(arch)/$(gcc_)
 	cd ./build/$(arch)/$(gcc_) && \
-	  ../../../source/$(gcc_)/configure \
-	    --target=$(target) --prefix=$(prefix) $(sysroot) --disable-nls --enable-languages=c,c++ \
-	    --disable-libgcj \
-	    --with-gnu-as --with-as=$(as) --with-gnu-ld --with-ld=$(ld) \
-	    -v > .x.config.log
+		../../../source/$(gcc_)/configure \
+			--target=$(target) \
+			--prefix=$(prefix) \
+			$(sysroot) \
+			--disable-nls \
+			--enable-languages=c,c++ \
+			--disable-libgcj \
+			--with-gnu-as \
+			--with-as=$(as) \
+			--with-gnu-ld \
+			--with-ld=$(ld) \
+			-v \
+			> .x.config.log
 	touch $@
 
