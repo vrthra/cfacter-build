@@ -8,7 +8,6 @@ build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.gz
 	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
-gccpath=$(installroot)/$(arch)
 userconfig='using gcc : $(gcc_ver) : $(gccpath)/bin/$(target)-g++ : <linkflags>"-Wl,-rpath=$(gccpath)/lib" ;'
 
 build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
@@ -16,22 +15,31 @@ build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
 	cat patches/boost-1.55.0-updates-for-sparc.patch | (cd build/$(arch)/$(boost_) && $(patch) -p0 )
 	touch $@
 
+userconfig:
+	echo $(userconfig) > build/$(arch)/$(boost_)/user-config.jam
+
 build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch
-	cd build/$(arch)/$(boost_)/tools/build/v2 && ./bootstrap.sh
+	cd build/$(arch)/$(boost_)/tools/build/v2 && \
+		env $(cmakepath) \
+		./bootstrap.sh > .x.config
 	touch $@
 
 install/$(arch)/$(boost_)/._.b2install: build/$(arch)/$(boost_)/._.checkout | install/$(arch)/$(boost_)
-	cd build/$(arch)/$(boost_)/tools/build/v2 && ./b2 install --prefix=$(installroot)/$(arch) toolset=gcc --debug-configuration
+	cd build/$(arch)/$(boost_)/tools/build/v2 && \
+		env $(cmakepath) \
+		./b2 install --prefix=$(installroot)/$(arch) toolset=gcc --debug-configuration > .x.b2install
 	touch $@
 
 build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arch)/$(boost_)/._.b2install
-	cd build/$(arch)/$(boost_)/ && $(installroot)/$(arch)/bin/b2 --build-dir=build/$(arch)/$(boost_) --prefix=$(installroot)/$(arch) --debug-configuration \
+	cd build/$(arch)/$(boost_)/ && \
+		env $(cmakepath) \
+		$(installroot)/$(arch)/bin/b2 --build-dir=build/$(arch)/$(boost_) --prefix=$(installroot)/$(arch) --debug-configuration \
 		--with-filesystem \
 		--with-log \
 		--with-program_options \
 		--with-regex \
 		--with-system \
-		install
+		install > .x.make
 	touch $@
 
 install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make | install/$(arch)/$(boost_)

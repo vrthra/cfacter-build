@@ -141,3 +141,19 @@ path=$(prefix)/bin \
 
 # ensure that the path is visible to our build as a shell environment variable.
 export PATH:=$(subst $(space),:,$(path))
+
+
+gccpath=$(installroot)/$(arch)
+gccnativepath=$(installroot)/i386
+cmakepath_=$(gccpath)/bin \
+          /usr/ccs/bin \
+          /usr/gnu/bin \
+          /usr/bin \
+          /bin \
+          /sbin \
+          /usr/sbin \
+          $(gccnativepath)/bin \
+          /usr/perl5/5.8.4/bin
+
+cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
+

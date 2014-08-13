@@ -1,13 +1,9 @@
 source/cfacter/.git: | source source/cfacter
 	$(git) clone git@github.com:puppetlabs/cfacter.git source/cfacter/
 
-
 build/$(arch)/cfacter/._.config: | source/cfacter/.git build/$(arch)/cfacter
-	cd build/$(arch)/cfacter && $(cmake) ../../../source/cfacter
+	cd build/$(arch)/cfacter && env $(cmakepath) $(cmake) ../../../source/cfacter
 
-#build/$(arch)/cfacter/._.make: build/$(arch)/cfacter/._.config
-#	cd build/$(arch)/cfacter && $(gmake)
-
-facter-i386: build/$(arch)/cfacter/._.make
+facter-$(arch): build/$(arch)/cfacter/._.make
 
 facter: facter-$(arch) 
