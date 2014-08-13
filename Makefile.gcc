@@ -4,12 +4,9 @@ projects+=$(gcc_)
 
 $(eval $(call standard_x,$(gcc_)))
 
-patches/gcc-contrib-4.8.3.patch: source
-	$(wget) -P patches/ $(sourceurl)/patches/gcc-contrib-4.8.3.patch
-
 # one patch for gcc too.
 source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
-	cat patches/gcc-contrib-4.8.3.patch | (cd ./source/$(gcc_) && $(patch) -p1 )
+	cat patches/gcc-contrib-4.8.2.patch | (cd ./source/$(gcc_) && $(patch) -p1 )
 	cd ./source/$(gcc_) && ./contrib/download_prerequisites 2>&1 | cat > .x.patch.log
 	touch $@
 
