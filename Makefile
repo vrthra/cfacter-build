@@ -76,6 +76,7 @@ include Makefile.cmake
 # Dependencies
 include Makefile.boost
 include Makefile.yamlcpp
+include Makefile.openssl
 
 # Our toolchain that uses compiler suite
 include Makefile.toolchain
