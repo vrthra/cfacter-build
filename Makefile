@@ -99,7 +99,7 @@ checkout: $(checkout_)
 
 cfacter: cfacter-$(arch)
 
-deps: boost yaml-cpp
+deps: boost yaml-cpp openssl
 	@echo $@ done
 
 # being lazy again. I promice to make them follow the dependencies correctly
