@@ -24,9 +24,9 @@ build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
 	touch $@
 
 build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
-	export LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib"
-	export CC=/opt/gcc-sparc/bin/sparc-sun-solaris2.11-gcc
-	export PATH=/opt/gcc-sparc/bin:$$PATH
+	export LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib" ; \
+	export CC=$(prefix)/bin/$(target)-gcc ; \
+	export PATH=$(prefix)/bin:$$PATH ; \
 	cd build/$(arch)/$(openssl_) && ./Configure \
 		--prefix=$(prefix) \
 		--openssldir=$(prefix)/ssl \
@@ -45,7 +45,7 @@ build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 		no-gost \
 		no-srp \
 		no-ssl2 \
-		>.x.config.log
+		> .openssl.config.log
 	touch $@
 
 build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.config
