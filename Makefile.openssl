@@ -8,7 +8,7 @@ fetched/$(openssl_).tar.gz: | source
 	$(wget) -P fetched/ 'https://www.openssl.org/source/$(openssl_).tar.gz'
 
 build/$(arch)/$(openssl_)/._.checkout: | build/$(arch) fetched/$(openssl_).tar.gz
-	cat source/$(openssl_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
+	cat fetched/$(openssl_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
