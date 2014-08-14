@@ -10,7 +10,7 @@ SET(CMAKE_C_COMPILER     ${PL_TOOLS_ROOT}/bin/i386-pc-solaris2.11-gcc)
 SET(CMAKE_CXX_COMPILER   ${PL_TOOLS_ROOT}/bin/i386-pc-solaris2.11-g++)
 
 # where is the target environment
-SET(CMAKE_FIND_ROOT_PATH  ${PL_BUILD_TOOLS})
+SET(CMAKE_FIND_ROOT_PATH  ${PL_TOOLS_ROOT})
 
 # search for programs in the build host directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
