@@ -5,7 +5,7 @@ projects+=$(gcc_)
 $(eval $(call standard_x,$(gcc_)))
 
 source/$(gcc_)/._.prereq: source/$(gcc_)/._.patch
-	(cd $(rootdir)/source/$(gcc_) && ./contrib/download_prerequisites ) $(t) $@.log
+	(cd $(rootdir)/source/$(gcc_) && env PATH=/usr/sfw/bin:$$PATH ./contrib/download_prerequisites ) $(t) $@.log
 
 # extract the headers
 build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot
@@ -20,7 +20,7 @@ build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 # GCC depends on binutils being already installed.
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
-build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq | ./build/$(arch)/$(gcc_)
+build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
 	(cd $(rootdir)/build/$(arch)/$(gcc_) && \
 		$(rootdir)/source/$(gcc_)/configure \
 			--target=$(target) \

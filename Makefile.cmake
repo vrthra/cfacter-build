@@ -6,7 +6,7 @@ $(eval $(call standard_x,$(cmake_)))
 
 build/$(arch)/$(cmake_)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
 
-build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch | ./build/i386/$(cmake_)
+build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch
 	(cd $(rootdir)/build/i386/$(cmake_) && env \
 		CC=$(prefix)/bin/$(target)-gcc \
 		CXX=$(prefix)/bin/$(target)-g++ \
@@ -22,7 +22,7 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch | ./build/i386/$(cmake
 	) $(t) $@.log
 	touch $@
 
-build/sparc/$(cmake_)/._.config: source/$(cmake_)/._.patch | ./build/$(arch)/$(cmake_)
+build/sparc/$(cmake_)/._.config: source/$(cmake_)/._.patch
 	echo "Can not build cmake for sparc" && exit 1
 
 cmake: install/$(arch)/cmake-$(cmake_ver)/._.install

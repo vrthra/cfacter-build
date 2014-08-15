@@ -4,18 +4,18 @@
 fetched/%.tar.gz: | fetched
 	$(wget) -P fetched/ $(sourceurl)/$*.tar.gz
 
-source/%/._.checkout: fetched/%.tar.gz | build/$(arch)/% source
+source/%/._.checkout: fetched/%.tar.gz | source
 	cat fetched/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 # We have a few patches now. so
 source/%/._.patch: source/%/._.checkout
-	cat patches/$*-* | (cd $(rootdir)/source/$* && $(patch) -p1 )
+	set +o pipefail; cat patches/$*-* | (cd $(rootdir)/source/$* && $(patch) -p1 )
 	touch $@
 
 # we cant predict the options to be passed to config, so we only have
 # a skeletal rule here. Override them for specific projects.
-build/$(arch)/%/._.config: source/%/._.patch
+build/$(arch)/%/._.config: source/%/._.patch | build/$(arch)/%
 	touch $@
 
 # In general make should be just make
@@ -28,12 +28,12 @@ install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
 	(cd build/$(arch)/$*/ && $(MAKE) install ) $(t) $@.log
 	touch $@
 
+# Relatively uncontroversial dependencies.
 define standard_x
 fetched/$(1).tar.gz: | fetched
-source/$(1)/._.checkout: fetched/$(1).tar.gz | build/$(arch)/$(1) source
-source/$(1)/._.patch: source/$(1)/._.checkout
-build/$(arch)/$(1)/._.config: source/$(1)/._.patch
-build/$(arch)/$(1)/._.make: build/$(arch)/$(1)/._.config
-install/$(arch)/$(1)/._.install: build/$(arch)/$(1)/._.make | install/$(arch)/$(1)
+source/$(1)/._.checkout: | source
+build/$(arch)/$(1)/._.config: | build/$(arch)/$(1)
+build/$(arch)/$(1)/._.make: | build/$(arch)/$(1)
+install/$(arch)/$(1)/._.install: | install/$(arch)/$(1)
 endef
 

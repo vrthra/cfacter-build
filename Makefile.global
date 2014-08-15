@@ -135,7 +135,7 @@ cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
 # Make bash sane.
 SHELL=/bin/bash -e -o pipefail
 # And dont use /bin/sh if you can help it.
-export SHELL:=/bin/bash
+export SHELL
 
 # redirect config make & make install output to a build.log
 t=2>&1 | tee -a build.log >
