@@ -48,6 +48,7 @@ install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make
 	(cd $(<D) && $(MAKE) SHELL=/bin/bash install ) $(t) $@.log
 	touch $@
 
+depends: openssl
 # ENTRY
 openssl: install/$(arch)/$(openssl_)/._.install
 	@echo $@ done

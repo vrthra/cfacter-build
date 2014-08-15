@@ -18,8 +18,7 @@ update-toolchain-sparc:
 update-toolchain-both:
 	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
 
-update-toolchain:
-	$(MAKE) update-toolchain-i386 update-toolchain-sparc update-toolchain-both
+update-toolchain: update-toolchain-i386 update-toolchain-sparc update-toolchain-both
 
 fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz:
 	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz

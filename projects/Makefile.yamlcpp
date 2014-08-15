@@ -19,6 +19,7 @@ build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch install/$(arch)
 	) $(t) $@.log
 	touch $@
 
+depends: yaml-cpp
 # ENTRY
 yaml-cpp: install/$(arch)/$(yamlcpp_)/._.install
 	@echo $@ done

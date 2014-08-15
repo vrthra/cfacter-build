@@ -20,6 +20,8 @@
 # source/%.tar.gz
 # 	< source/%/._.checkout
 #	 		< source/%/._.patch
+#	 		  ...  < source/%/._.sync  # not a standard target, Used for places where
+#	 		                           # we need source in buld/$arch/%
 #	 			< source/%/._.config
 #	 				< source/%/._.make
 #	 					< source/%/._.install
@@ -66,7 +68,7 @@ prepare: prepare-$(sys_rel)
 
 # Project specific makefiles
 # Use the generic as a template for new projects
-include Makefile.generic
+include projects/Makefile.generic
 
 # compiler suite
 include projects/Makefile.binutils
@@ -100,19 +102,19 @@ checkout: $(checkout_)
 
 build: build-$(arch)
 
-depends: boost yaml-cpp openssl
+depends:
 	@echo $@ done
 
 build-sparc:
-	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=sparc depends
-	$(MAKE) arch=sparc cfacter
+	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers) $(s)
+	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers) $(s)
+	$(MAKE) arch=sparc depends $(s)
+	$(MAKE) arch=sparc cfacter $(s)
 
 build-i386:
-	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
-	$(MAKE) arch=i386 depends
-	$(MAKE) arch=i386 cfacter
+	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers) $(s)
+	$(MAKE) arch=i386 depends $(s)
+	$(MAKE) arch=i386 cfacter $(s)
 
 $(mydirs): ; /bin/mkdir -p $@
 

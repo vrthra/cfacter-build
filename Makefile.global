@@ -136,4 +136,5 @@ export SHELL
 t=2>&1 | tee -a build.log >
 
 # Use this if you dislike redirecting to logs, and would rather roll your own
-#t=; echo 
+#t= && echo
+s=&& echo $$SECONDS
