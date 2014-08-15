@@ -7,36 +7,25 @@ $(eval $(call standard_x,$(boost_)))
 fetched/$(boost_).tar.gz: | source
 	$(wget) -P fetched/ 'http://iweb.dl.sourceforge.net/project/boost/boost/1.55.0/$(boost_).tar.gz'
 
-build/$(arch)/$(boost_)/._.checkout: | build/$(arch) fetched/$(boost_).tar.gz
-	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
-	touch $@
-
 userconfig='using gcc : $(gcc_ver) : $(gccpath)/bin/$(target)-g++ : <linkflags>"-Wl,-rpath=$(gccpath)/lib" ;'
 
-build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
-	echo $(userconfig) > build/$(arch)/$(boost_)/user-config.jam
-	cat patches/boost-1.55.0-updates-for-sparc.patch | (cd build/$(arch)/$(boost_) && $(patch) -p0 )
-	touch $@
-
-userconfig:
+build/$(arch)/$(boost_)/user-config.jam: build/$(arch)/$(boost_)/._.patch
 	echo $(userconfig) > build/$(arch)/$(boost_)/user-config.jam
 
-build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch
-	(cd build/$(arch)/$(boost_)/tools/build/v2 && \
-		env $(cmakepath) \
-		./bootstrap.sh ) $(t) $@.log
+build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch build/$(arch)/$(boost_)/user-config.jam
+	(cd build/$(arch)/$(boost_)/tools/build/v2 && env $(cmakepath) ./bootstrap.sh ) $(t) $@.log
 	touch $@
 
-install/$(arch)/$(boost_)/._.b2install: build/$(arch)/$(boost_)/._.checkout | install/$(arch)/$(boost_)
-	cd build/$(arch)/$(boost_)/tools/build/v2 && \
-		env $(cmakepath) \
-		./b2 install --prefix=$(installroot)/$(arch) toolset=gcc --debug-configuration > .x.b2install
+build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config
+	(cd build/$(arch)/$(boost_)/tools/build/v2 && env $(cmakepath) \
+		./b2 install --prefix=$(installroot)/$(arch) toolset=gcc --debug-configuration
+	) $(t) $@.log
 	touch $@
 
-build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arch)/$(boost_)/._.b2install
-	(cd build/$(arch)/$(boost_)/ && \
-		env $(cmakepath) \
-		$(installroot)/$(arch)/bin/b2 --build-dir=build/$(arch)/$(boost_) --prefix=$(installroot)/$(arch) --debug-configuration \
+install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make | install/$(arch)/$(boost_)
+	(cd build/$(arch)/$(boost_)/ && env $(cmakepath) $(installroot)/$(arch)/bin/b2 --debug-configuration \
+		--build-dir=build/$(arch)/$(boost_) \
+		--prefix=$(installroot)/$(arch) \
 		--with-filesystem \
 		--with-log \
 		--with-program_options \
@@ -44,9 +33,6 @@ build/$(arch)/$(boost_)/._.make: build/$(arch)/$(boost_)/._.config install/$(arc
 		--with-system \
 		install \
 	) $(t) $@.log
-	touch $@
-
-install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make | install/$(arch)/$(boost_)
 	touch $@
 
 # ENTRY

@@ -8,14 +8,9 @@ source/%/._.checkout: fetched/%.tar.gz | build/$(arch)/% source
 	cat fetched/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
-# ENTRY
-# use `gmake arch=sparc headers` just extract the headers. The following rules
-headers: build/$(arch) build/$(arch)/._.headers
-	@echo $@ done
-
-# by default we dont have any patches, so override it for projects that have
-# it.
+# We have a few patches now. so
 source/%/._.patch: source/%/._.checkout
+	cat patches/$*-* | (cd $(rootdir)/source/$* && $(patch) -p1 )
 	touch $@
 
 # we cant predict the options to be passed to config, so we only have
@@ -32,4 +27,13 @@ build/$(arch)/%/._.make: build/$(arch)/%/._.config
 install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
 	(cd build/$(arch)/$*/ && $(MAKE) install ) $(t) $@.log
 	touch $@
+
+define standard_x
+fetched/$(1).tar.gz: | fetched
+source/$(1)/._.checkout: fetched/$(1).tar.gz | build/$(arch)/$(1) source
+source/$(1)/._.patch: source/$(1)/._.checkout
+build/$(arch)/$(1)/._.config: source/$(1)/._.patch
+build/$(arch)/$(1)/._.make: build/$(arch)/$(1)/._.config
+install/$(arch)/$(1)/._.install: build/$(arch)/$(1)/._.make | install/$(arch)/$(1)
+endef
 

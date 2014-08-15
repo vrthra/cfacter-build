@@ -10,7 +10,6 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch | ./build/i386/$(cmake
 	(cd $(rootdir)/build/i386/$(cmake_) && env \
 		CC=$(prefix)/bin/$(target)-gcc \
 		CXX=$(prefix)/bin/$(target)-g++ \
-		MAKE=$(MAKE) \
 		CFLAGS="-I$(prefix)/include" \
 		LD_LIBRARY_PATH="$(prefix)/lib" \
 		LDFLAGS="-L$(prefix)/lib -R$(prefix)/lib" \

@@ -1,5 +1,5 @@
---- common.h.orig	Tue Sep  4 05:53:47 2012
-+++ common.h	Wed Oct 16 21:48:40 2013
+--- a/include/elf/common.h	Tue Sep  4 05:53:47 2012
++++ b/include/elf/common.h	Wed Oct 16 21:48:40 2013
 @@ -956,8 +956,10 @@
  #define AT_SUN_LDNAME   2006    /* String giving name of dynamic linker.  */
  #define AT_SUN_LPAGESZ  2007    /* Large pagesize.   */

@@ -4,24 +4,10 @@ projects+=$(openssl_)
 
 $(eval $(call standard_x,$(openssl_)))
 
-ifeq (sparc,${arch})
-	openssl_target=solaris-sparcv9-gcc
-endif
-ifeq (i386,${arch})
-	openssl_target=solaris-x86-gcc
-endif
+openssl_target=solaris-$(if $(filter sparc,$(arch)),sparc,x86)-gcc
 
 fetched/$(openssl_).tar.gz: | source
 	$(wget) -P fetched/ 'https://www.openssl.org/source/$(openssl_).tar.gz'
-
-build/$(arch)/$(openssl_)/._.checkout: | build/$(arch) fetched/$(openssl_).tar.gz
-	cat fetched/$(openssl_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
-	touch $@
-
-build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
-	cat patches/openssl-1.0.0l-use-gcc-instead-of-makedepend.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
-	cat patches/openssl-1.0.0m_fix_include.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
-	touch $@
 
 build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 	(cd build/$(arch)/$(openssl_) && \
@@ -49,13 +35,12 @@ build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 	) $(t) $@.log
 	touch $@
 
-build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.config
-	(cd build/$(arch)/$(openssl_) && $(MAKE) SHELL=/bin/bash depend && $(MAKE) SHELL=/bin/bash ) $(t) $@.log
+
+build/$(arch)/$(openssl_)/._.makedepend: build/$(arch)/$(openssl_)/._.config
+	(cd build/$(arch)/$(openssl_) && $(MAKE) depend ) $(t) $@.log
 	touch $@
 
-install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make | install/$(arch)/$(openssl_)
-	(cd build/$(arch)/$(openssl_) && $(MAKE) SHELL=/bin/bash install) $(t) $@.log
-	touch $@
+build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.makedepend
 
 # ENTRY
 openssl: install/$(arch)/$(openssl_)/._.install

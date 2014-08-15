@@ -10,7 +10,7 @@ source/cfacter/._.patch: source/cfacter/._.checkout
 		lib/inc/facter/facts/posix/processor_resolver.hpp \
 		lib/src/facts/posix/kernel_resolver.cc \
 		lib/src/facts/posix/processor_resolver.cc
-	cat patches/cfacter-* | (cd source/cfacter && patch -p1 )
+	cat patches/cfacter-* | (cd source/cfacter && $(patch) -p1 )
 
 build/$(arch)/cfacter/._.config: | source/cfacter/._.patch build/$(arch)/cfacter
 	(cd $(rootdir)/build/$(arch)/cfacter && env $(cmakepath) $(cmake) $(rootdir)/source/cfacter) $(t) $@.log

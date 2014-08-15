@@ -4,11 +4,8 @@ projects+=$(gcc_)
 
 $(eval $(call standard_x,$(gcc_)))
 
-# one patch for gcc too.
-source/$(gcc_)/._.patch: source/$(gcc_)/._.checkout
-	cat patches/gcc-contrib-4.8.2.patch | (cd $(rootdir)/source/$(gcc_) && $(patch) -p1 )
+source/$(gcc_)/._.prereq: source/$(gcc_)/._.patch
 	(cd $(rootdir)/source/$(gcc_) && ./contrib/download_prerequisites ) $(t) $@.log
-	touch $@
 
 # extract the headers
 build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot
@@ -23,7 +20,7 @@ build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 # GCC depends on binutils being already installed.
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
-build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch | ./build/$(arch)/$(gcc_)
+build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq | ./build/$(arch)/$(gcc_)
 	(cd $(rootdir)/build/$(arch)/$(gcc_) && \
 		$(rootdir)/source/$(gcc_)/configure \
 			--target=$(target) \
