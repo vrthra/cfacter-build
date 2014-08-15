@@ -12,8 +12,14 @@ fetched/$(openssl_).tar.gz:
 build/$(arch)/$(openssl_)/._.checkout: fetched/$(openssl_).tar.gz | build/$(arch)
 	cat $< | (cd build/$(arch) && $(gzip) -dc | $(tar) -xf - )
 
-source/$(openssl_)/._.checkout: build/$(arch)/$(openssl_)/._.checkout
-	@echo $@ done.
+# NOP
+source/$(openssl_)/._.checkout: build/$(arch)/$(openssl_)/._.checkout | source/$(openssl_)
+	touch $@
+
+# NOP
+source/$(openssl_)/._.patch: source/$(openssl_)/._.checkout
+	touch $@
+
 
 build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
 	cat patches/$(openssl_)-* | (cd $(@D) && $(patch) -p1 )
