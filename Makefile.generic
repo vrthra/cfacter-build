@@ -9,7 +9,7 @@ source/%/._.checkout: fetched/%.tar.gz | source/%
 
 # We have a few patches now. so
 source/%/._.patch: source/%/._.checkout
-	(cat -s patches/$*-*; true) | (cd $(@D) && $(patch) -p1 )
+	set +o pipefail; cat -s patches/$*-* | (cd $(@D) && $(patch) -p1 )
 	touch $@
 
 # we cant predict the options to be passed to config, so we only have
@@ -24,7 +24,7 @@ build/$(arch)/%/._.make: build/$(arch)/%/._.config
 
 # And make install should work.
 install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
-	(cd $(@D) && $(MAKE) install ) $(t) $@.log
+	(cd $(<D) && $(MAKE) install ) $(t) $@.log
 	touch $@
 
 # Relatively uncontroversial dependencies.

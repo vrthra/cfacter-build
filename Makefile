@@ -39,10 +39,9 @@ all:
 
 
 # ENTRY
-# Clean out our builds. Note that we dont touch our sources which should not
-# be dirty.
+# Clean out our builds
 clean:
-	rm -rf build install
+	rm -rf build install source
 
 # ENTRY
 # Clean out the installed packages. Unfortunately, we also need to
@@ -83,7 +82,7 @@ include projects/Makefile.openssl
 include Makefile.toolchain
 
 # CFacter tha tuses dependencies
-include projects/Makefile.facter
+include projects/Makefile.cfacter
 
 # ENTRY
 get: $(get_)

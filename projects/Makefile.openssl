@@ -9,6 +9,15 @@ openssl_target=solaris-$(if $(filter sparc,$(arch)),sparc,x86)-gcc
 fetched/$(openssl_).tar.gz:
 	$(wget) -P $(@D) 'https://www.openssl.org/source/$(openssl_).tar.gz'
 
+build/$(arch)/$(openssl_)/._.checkout: fetched/$(openssl_).tar.gz | build/$(arch)
+	cat $< | (cd build/$(arch) && $(gzip) -dc | $(tar) -xf - )
+
+source/$(openssl_)/._.checkout: build/$(arch)/$(openssl_)/._.checkout
+	@echo $@ done.
+
+build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
+	cat patches/$(openssl_)-* | (cd $(@D) && $(patch) -p1 )
+
 build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 	(cd $(@D) && env \
 				LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib" \
@@ -37,7 +46,7 @@ build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 
 
 build/$(arch)/$(openssl_)/._.makedepend: build/$(arch)/$(openssl_)/._.config
-	(cd $(@D) && $(MAKE) depend ) $(t) $@.log
+	(cd $(@D) && $(MAKE) SHELL=/bin/bash depend ) $(t) $@.log
 	touch $@
 
 build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.makedepend
