@@ -9,7 +9,7 @@ source/$(gcc_)/._.prereq: source/$(gcc_)/._.patch
 	touch $@
 
 # extract the headers
-build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot build/%
+build/%/._.headers: fetched/%.sysroot.tar.gz | $(installroot)/%/sysroot build/%
 	cat $< | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 

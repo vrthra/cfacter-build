@@ -9,9 +9,6 @@ openssl_target=solaris-$(if $(filter sparc,$(arch)),sparc,x86)-gcc
 fetched/$(openssl_).tar.gz:
 	$(wget) -P $(@D) 'https://www.openssl.org/source/$(openssl_).tar.gz'
 
-build/$(arch)/$(openssl_)/._.sync:  source/$(openssl_)/._.patch | build/$(arch)/$(openssl_)
-	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D); $(tar) -xf -)
-
 build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.sync
 	(cd $(@D) && env \
 				LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib" \

@@ -22,10 +22,11 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch
 	) $(t) $@.log
 	touch $@
 
-build/sparc/$(cmake_)/._.config: source/$(cmake_)/._.patch
-	echo "Can not build cmake for sparc" && exit 1
+# DUMMY
+install/sparc/$(cmake_)/._.install:
+	touch $@
 
-cmake: install/$(arch)/cmake-$(cmake_ver)/._.install
+cmake: install/$(arch)/$(cmake_)/._.install
 	@echo $@ done
 
 # vim: set filetype=make :

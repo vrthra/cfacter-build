@@ -9,9 +9,6 @@ fetched/$(boost_).tar.gz:
 
 userconfig='using gcc : $(gcc_ver) : $(gccpath)/bin/$(target)-g++ : <linkflags>"-Wl,-rpath=$(gccpath)/lib" ;'
 
-build/$(arch)/$(boost_)/._.sync:  source/$(boost_)/._.patch | build/$(arch)/$(boost_)
-	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D); $(tar) -xf -)
-
 build/$(arch)/$(boost_)/._.checkout: fetched/$(boost_).tar.gz | build/$(arch)
 	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@

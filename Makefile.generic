@@ -27,6 +27,10 @@ install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
 	(cd $(<D) && $(MAKE) install ) $(t) $@.log
 	touch $@
 
+# If we want the source under build, then use this as a dependency
+build/$(arch)/%/._.sync:  source/%/._.patch | build/$(arch)/%
+	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D) && $(tar) -xf -)
+
 # Relatively uncontroversial dependencies.
 define standard_x
 fetched/$(1).tar.gz: | fetched

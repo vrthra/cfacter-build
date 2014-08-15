@@ -9,14 +9,14 @@ export YAMLCPP_ROOT=$(installroot)
 fetched/$(yamlcpp_).tar.gz:
 	$(wget) -P $(@D) 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
 
-build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch
+build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch install/$(arch)/$(cmake_)/._.install
 	(cd $(@D) && \
 		$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
 		  -DCMAKE_VERBOSE_MAKEFILE=ON \
 		  -DCMAKE_INSTALL_PREFIX:PATH=$(prefix) \
 		  -DBUILD_SHARED_LIBS=ON \
 		  -DYAML_CPP_BUILD_TOOLS=0 $(rootdir)/source/$(yamlcpp_) \
-		) $(t) $@.log
+	) $(t) $@.log
 	touch $@
 
 # ENTRY
