@@ -9,30 +9,17 @@ fetched/$(boost_).tar.gz:
 
 userconfig='using gcc : $(gcc_ver) : $(gccpath)/bin/$(target)-g++ : <linkflags>"-Wl,-rpath=$(gccpath)/lib" ;'
 
-
-
-# Unfortunately, we need the boost source in build, so we cheat.
-# NOP
-source/$(boost_)/._.checkout: fetched/$(boost_).tar.gz build/$(arch)/$(boost_)/._.checkout
-	touch $@
-
-# NOP
-source/$(boost_)/._.patch: source/$(boost_)/._.checkout
-	touch $@
+build/$(arch)/$(boost_)/._.sync:  source/$(boost_)/._.patch | build/$(arch)/$(boost_)
+	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D); $(tar) -xf -)
 
 build/$(arch)/$(boost_)/._.checkout: fetched/$(boost_).tar.gz | build/$(arch)
 	cat fetched/$(boost_).tar.gz | (cd build/$(arch)/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
-
-build/$(arch)/$(boost_)/._.patch: build/$(arch)/$(boost_)/._.checkout
-	cat patches/$(boost_)-* | (cd $(@D) && $(patch) -p1)
-	touch $@
-
-build/$(arch)/$(boost_)/user-config.jam: build/$(arch)/$(boost_)/._.patch
+build/$(arch)/$(boost_)/user-config.jam: build/$(arch)/$(boost_)/._.sync
 	echo $(userconfig) > $(@D)/user-config.jam
 
-build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.patch build/$(arch)/$(boost_)/user-config.jam
+build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.sync build/$(arch)/$(boost_)/user-config.jam
 	(cd $(@D)/tools/build/v2 && env $(cmakepath) ./bootstrap.sh ) $(t) $@.log
 	touch $@
 
