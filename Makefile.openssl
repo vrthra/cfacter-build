@@ -20,7 +20,7 @@ build/$(arch)/$(openssl_)/._.checkout: | build/$(arch) fetched/$(openssl_).tar.g
 
 build/$(arch)/$(openssl_)/._.patch: build/$(arch)/$(openssl_)/._.checkout
 	cat patches/openssl-1.0.0l-use-gcc-instead-of-makedepend.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
-	cat patches/openssl_1.0.0m_fix_include.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
+	cat patches/openssl-1.0.0m_fix_include.patch | (cd build/$(arch)/$(openssl_) && $(patch) -p1 )
 	touch $@
 
 build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
@@ -50,11 +50,11 @@ build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.patch
 	touch $@
 
 build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.config
-	(cd build/$(arch)/$(openssl_) && $(MAKE) depend && $(MAKE) ) $(t) $@.log
+	(cd build/$(arch)/$(openssl_) && $(MAKE) SHELL=/bin/bash depend && $(MAKE) SHELL=/bin/bash ) $(t) $@.log
 	touch $@
 
 install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make | install/$(arch)/$(openssl_)
-	cd build/$(arch)/$(openssl_) && $(MAKE) install
+	(cd build/$(arch)/$(openssl_) && $(MAKE) SHELL=/bin/bash install) $(t) $@.log
 	touch $@
 
 # ENTRY
