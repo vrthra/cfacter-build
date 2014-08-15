@@ -30,6 +30,7 @@ install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
 # If we want the source under build, then use this as a dependency
 build/$(arch)/%/._.sync:  source/%/._.patch | build/$(arch)/%
 	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D) && $(tar) -xf -)
+	touch $@
 
 # Relatively uncontroversial dependencies.
 define standard_x
