@@ -9,18 +9,23 @@ $(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake: patches/sol-$(sys
 make-toolchain-%: install/i386/cmake-$(cmake_ver)/._.install install/%/gcc-$(gcc_ver)/._.install
 	@echo $@ done
 
-update-toolchain:
-	(cd /opt/ && $(tar) -cf - $(installlabel)/i386 ) | $(gzip) -c > source/sol-$(sys_rel)-i386-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - $(installlabel)/sparc ) | $(gzip) -c > source/sol-$(sys_rel)-sparc-compiler.tar.gz
-	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > source/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
+update-toolchain-i386:
+	(cd /opt/ && $(tar) -cf - $(installlabel)/i386 ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-compiler.tar.gz
 
-fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz: | source
+update-toolchain-sparc:
+	(cd /opt/ && $(tar) -cf - $(installlabel)/sparc ) | $(gzip) -c > fetched/sol-$(sys_rel)-sparc-compiler.tar.gz
+
+update-toolchain-both:
+	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
+
+update-toolchain:
+	$(MAKE) update-toolchain-i386 update-toolchain-sparc update-toolchain-both
+
+fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz:
 	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
 
 $(installroot)/$(arch)/bin/$(target)-gcc: | fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz
-	@echo start $@
-	cat source/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
-	@echo done $@
+	cat fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 
 fetch-toolchain-%: | $(installroot)/%/bin/$(call mytarget,%)-gcc
 	@echo done $@

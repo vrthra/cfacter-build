@@ -30,10 +30,12 @@ include Makefile.global
 
 # ENTRY
 all:
-	@echo "usage:\tsudo $(MAKE) prepare"
-	@echo "\t$(MAKE) arch=$(arch) cfacter"
-	@echo
-	@echo "remove:\tsudo $(MAKE) uninstall"
+	@echo "usage:"
+	@echo "sudo	$(MAKE) prepare -- creates the $(installroot), and gives us complete permissions"
+	@echo "	$(MAKE) arch=$(arch) build"
+	@echo "remove:"
+	@echo "	$(MAKE) clean -- cleans build/ and install/ , does not touch source/"
+	@echo "sudo	$(MAKE) clobber -- removes the $(installroot)"
 
 
 # ENTRY
@@ -68,20 +70,20 @@ prepare: prepare-$(sys_rel)
 include Makefile.generic
 
 # compiler suite
-include Makefile.binutils
-include Makefile.gcc
-include Makefile.cmake
+include projects/Makefile.binutils
+include projects/Makefile.gcc
+include projects/Makefile.cmake
 
 # Dependencies
-include Makefile.boost
-include Makefile.yamlcpp
-include Makefile.openssl
+include projects/Makefile.boost
+include projects/Makefile.yamlcpp
+include projects/Makefile.openssl
 
 # Our toolchain that uses compiler suite
 include Makefile.toolchain
 
 # CFacter tha tuses dependencies
-include Makefile.facter
+include projects/Makefile.facter
 
 # ENTRY
 get: $(get_)
@@ -97,27 +99,24 @@ checkout: $(checkout_)
 # cross compiled toolchain, and finally use both together to produce our
 # cross-compiled cfacter
 
-cfacter: cfacter-$(arch)
+build: build-$(arch)
 
 depends: boost yaml-cpp openssl
 	@echo $@ done
 
-# being lazy again. I promice to make them follow the dependencies correctly
-# later.
-cfacter-sparc:
+build-sparc:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=sparc depends
-	$(MAKE) arch=sparc facter
+	$(MAKE) arch=sparc cfacter
 
-cfacter-i386:
+build-i386:
 	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers)
 	$(MAKE) arch=i386 depends
-	$(MAKE) arch=i386 facter
+	$(MAKE) arch=i386 cfacter
 
 $(mydirs): ; /bin/mkdir -p $@
 
 # Asking make not to delete any of our intermediate touch files.
 .PRECIOUS: $(get_) $(checkout_) $(patch_) \
-	         $(config_) $(make_) $(install_) \
-	         $(toolchain_) 
+	         $(config_) $(make_) $(install_)

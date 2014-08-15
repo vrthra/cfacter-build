@@ -5,11 +5,11 @@ projects+=$(gcc_)
 $(eval $(call standard_x,$(gcc_)))
 
 source/$(gcc_)/._.prereq: source/$(gcc_)/._.patch
-	(cd $(rootdir)/source/$(gcc_) && env PATH=/usr/sfw/bin:$$PATH ./contrib/download_prerequisites ) $(t) $@.log
+	(cd $(@D) && ./contrib/download_prerequisites ) $(t) $@.log
 
 # extract the headers
-build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot
-	cat fetched/$*.sysroot.tar.gz | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
+build/%/._.headers: | fetched/%.sysroot.tar.gz $(installroot)/%/sysroot build/%
+	cat $< | (cd $(installroot)/$*/sysroot && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 get: fetched/sparc.sysroot.tar.gz
@@ -21,8 +21,7 @@ build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
 build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
-	(cd $(rootdir)/build/$(arch)/$(gcc_) && \
-		$(rootdir)/source/$(gcc_)/configure \
+	(cd $(@D) && $(rootdir)/source/$(gcc_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \
 			$(sysroot) \

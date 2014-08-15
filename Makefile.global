@@ -2,7 +2,8 @@
 #  important is the arch changes whether a native compiler or a cross-compiler
 #  is built.
 
-rootdir:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+# Since we dont recurse into subdirs, we can use CURDIR for the root path.
+rootdir:=$(CURDIR)
 
 arch=i386
 # -----------------------------------------------------------------------------
@@ -18,20 +19,14 @@ projects=
 #  Similarly, add `include Makefile.$(sys_rel)`
 #  and `include Makefile.$(arch).$(sys_rel)` if necessary.
 
-define mytarget
-$(if $(findstring sparc,$(1)),sparc-sun-solaris,i386-pc-solaris)$(solaris_version)
-endef
+mytarget=$(if $(filter sparc,$1),sparc-sun,i386-pc)-solaris$(solaris_version)
 
 # need the label for making tar balls.
 installlabel=pl-build-tools
 installroot=/opt/$(installlabel)
 prefix=$(installroot)/$(arch)
 target=$(call mytarget,$(arch))
-ifeq (sparc,${arch})
-	sysroot=--with-sysroot=$(prefix)/sysroot
-else
-	sysroot=
-endif
+sysroot=$(if $(filter sparc,$(arch)),--with-sysroot=$(prefix)/sysroot,)
 # -----------------------------------------------------------------------------
 # The URL from where we get most of our sources.
 sourceurl=http://enterprise.delivery.puppetlabs.net/sources/solaris

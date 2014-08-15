@@ -1,16 +1,15 @@
-# -----------------------------------------------------------------------------
 #  Generic definitions, override them to implement any specific behavior.
 
 fetched/%.tar.gz: | fetched
-	$(wget) -P fetched/ $(sourceurl)/$*.tar.gz
+	$(wget) -P $(@D) $(sourceurl)/$*.tar.gz
 
-source/%/._.checkout: fetched/%.tar.gz | source
-	cat fetched/$*.tar.gz | (cd source/ && $(gzip) -dc | $(tar) -xf - )
+source/%/._.checkout: fetched/%.tar.gz | source/%
+	cat $< | (cd source/ && $(gzip) -dc | $(tar) -xf - )
 	touch $@
 
 # We have a few patches now. so
 source/%/._.patch: source/%/._.checkout
-	set +o pipefail; cat patches/$*-* | (cd $(rootdir)/source/$* && $(patch) -p1 )
+	(cat -s patches/$*-*; true) | (cd $(@D) && $(patch) -p1 )
 	touch $@
 
 # we cant predict the options to be passed to config, so we only have
@@ -20,18 +19,18 @@ build/$(arch)/%/._.config: source/%/._.patch | build/$(arch)/%
 
 # In general make should be just make
 build/$(arch)/%/._.make: build/$(arch)/%/._.config
-	(cd build/$(arch)/$*/ && $(MAKE) ) $(t) $@.log
+	(cd $(@D) && $(MAKE) ) $(t) $@.log
 	touch $@
 
 # And make install should work.
 install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
-	(cd build/$(arch)/$*/ && $(MAKE) install ) $(t) $@.log
+	(cd $(@D) && $(MAKE) install ) $(t) $@.log
 	touch $@
 
 # Relatively uncontroversial dependencies.
 define standard_x
 fetched/$(1).tar.gz: | fetched
-source/$(1)/._.checkout: | source
+source/$(1)/._.checkout: | source/$(1)
 build/$(arch)/$(1)/._.config: | build/$(arch)/$(1)
 build/$(arch)/$(1)/._.make: | build/$(arch)/$(1)
 install/$(arch)/$(1)/._.install: | install/$(arch)/$(1)
