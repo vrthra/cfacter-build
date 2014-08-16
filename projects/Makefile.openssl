@@ -1,6 +1,7 @@
 openssl_ver=1.0.0m
 openssl_=openssl-$(openssl_ver)
 projects+=$(openssl_)
+names+=openssl
 
 $(eval $(call standard_x,$(openssl_)))
 
@@ -50,6 +51,7 @@ install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make
 	touch $@
 
 depends: openssl
+
 # ENTRY
-openssl: install/$(arch)/$(openssl_)/._.install
+openssl: install-$(openssl_)
 	@echo $@ done

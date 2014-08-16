@@ -22,6 +22,16 @@ build/$(arch)/%/._.make: build/$(arch)/%/._.config
 	(cd $(@D) && $(MAKE) ) $(t) $@.log
 	touch $@
 
+clean-%:
+	(cd build/$(arch)/$*/ && $(MAKE) clean ) $(t) $@.log
+	rm -f \
+		build/$(arch)/$*/._.config \
+		build/$(arch)/$*/._.make \
+		install/$(arch)/$*/._.install
+
+install-%: install/$(arch)/%/._.install
+	  @echo $@ done
+
 # And make install should work.
 install/$(arch)/%/._.install: build/$(arch)/%/._.make | install/$(arch)/%
 	(cd $(<D) && $(MAKE) install ) $(t) $@.log

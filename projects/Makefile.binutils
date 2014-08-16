@@ -1,7 +1,7 @@
 binutils_ver=2.23.2
 binutils_=binutils-$(binutils_ver)
-
 projects+=$(binutils_)
+names+=binutils
 
 $(eval $(call standard_x,$(binutils_)))
 
@@ -16,6 +16,9 @@ build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch
 	) $(t) $@.log
 	touch $@
 
+compiler: binutils
+
 # ENTRY
-binutils: install/$(arch)/$(binutils_)/._.install
+binutils: install-$(binutils_)
 	@echo $@ done
+

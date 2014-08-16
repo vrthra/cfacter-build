@@ -1,6 +1,7 @@
 boost_ver=1_55_0
 boost_=boost_$(boost_ver)
 projects+=$(boost_)
+names+=boost
 
 $(eval $(call standard_x,$(boost_)))
 
@@ -40,6 +41,7 @@ install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make
 	touch $@
 
 depends: boost
+
 # ENTRY
-boost: install/$(arch)/$(boost_)/._.install
+boost: install-$(boost_)
 	@echo $@ done

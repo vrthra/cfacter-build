@@ -1,6 +1,7 @@
 yamlcpp_ver=0.5.1
 yamlcpp_=yaml-cpp-$(yamlcpp_ver)
 projects+=$(yamlcpp_)
+names+=yaml-cpp
 
 $(eval $(call standard_x,$(yamlcpp_)))
 
@@ -20,6 +21,7 @@ build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch $(cmake)
 	touch $@
 
 depends: yaml-cpp
+
 # ENTRY
-yaml-cpp: install/$(arch)/$(yamlcpp_)/._.install
+yaml-cpp: install-$(yamlcpp_)
 	@echo $@ done

@@ -1,6 +1,7 @@
 cfacter_ver=0
 cfacter_=cfacter-$(cfacter_ver)
 projects+=$(cfacter_)
+names+=cfacter
 
 $(eval $(call standard_x,$(cfacter_)))
 
@@ -23,6 +24,8 @@ build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch /$(cmake)
 		cmake -DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib \
 		$(rootdir)/source/$(cfacter_)) $(t) $@.log
 	touch $@
+
+program: cfacter
 
 cfacter: build/$(arch)/$(cfacter_)/._.make
 	@echo $@ done

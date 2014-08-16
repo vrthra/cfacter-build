@@ -33,11 +33,12 @@ include Makefile.global
 # ENTRY
 all:
 	@echo "usage:"
-	@echo "sudo	$(MAKE) prepare -- creates the $(installroot), and gives us complete permissions"
-	@echo "	$(MAKE) arch=$(arch) build"
+	@echo "sudo	$(MAKE) prepare -- creates the $(installroot) with permissions for current user"
+	@echo "	$(MAKE) [arch={i386,sparc}] [getcompilers={make,fetch}] build"
 	@echo "remove:"
-	@echo "	$(MAKE) clean -- removes source/ build/ install/"
-	@echo "sudo	$(MAKE) clobber -- removes the $(installroot)"
+	@echo "	$(MAKE) clean -- recursively cleans (* Only on full builds *)"
+	@echo "	$(MAKE) clobber -- removes source/ build/ install/"
+	@echo "sudo	$(MAKE) uninstall -- removes the $(installroot)"
 
 
 # Project specific makefiles
@@ -62,13 +63,16 @@ include projects/Makefile.cfacter
 
 # ENTRY
 # Clean out our builds
-clean:
+clobber:
 	rm -rf build install source
+
+clean: $(addprefix clean-,$(names))
+	@echo $@ done
 
 # ENTRY
 # Clean out the installed packages. Unfortunately, we also need to
 # redo the headers 
-clobber:
+uninstall:
 	rm -rf $(installroot)
 
 prepare-10:

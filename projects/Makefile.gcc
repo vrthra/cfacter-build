@@ -1,6 +1,7 @@
 gcc_ver=4.8.2
 gcc_=gcc-$(gcc_ver)
 projects+=$(gcc_)
+names+=gcc
 
 $(eval $(call standard_x,$(gcc_)))
 
@@ -37,6 +38,8 @@ build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prere
 	) $(t) $@.log
 	touch $@
 
+compiler: gcc
+
 # ENTRY
-gcc: install/$(arch)/gcc-$(gcc_ver)/._.install
+gcc: install-$(gcc_ver)
 	@echo $@ done
