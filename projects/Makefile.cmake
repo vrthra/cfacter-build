@@ -4,6 +4,12 @@ projects+=$(cmake_)
 
 $(eval $(call standard_x,$(cmake_)))
 
+cmaketoolchain=sol-$(sys_rel)-$(arch)-toolchain.cmake
+.PRECIOUS: $(installroot)/$(arch)/$(cmaketoolchain)
+
+$(installroot)/$(arch)/$(cmaketoolchain): patches/$(cmaketoolchain) | $(installroot)/$(arch)
+	cp $< $@
+
 build/$(arch)/$(cmake_)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
 
 build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch
@@ -23,8 +29,12 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch
 	touch $@
 
 # DUMMY
-install/sparc/$(cmake_)/._.install:
+install/sparc/$(cmake_)/._.install: $(installroot)/$(arch)/$(cmaketoolchain)
 	touch $@
+
+# ENTRY
+cmakeenv: $(installroot)/$(arch)/$(cmaketoolchain)
+	@echo $@ done
 
 cmake: install/$(arch)/$(cmake_)/._.install
 	@echo $@ done

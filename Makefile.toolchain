@@ -1,42 +1,27 @@
-.PRECIOUS: $(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake
-
-$(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake: patches/sol-$(sys_rel)-$(arch)-toolchain.cmake | $(installroot)/$(arch)
-	cp patches/sol-$(sys_rel)-$(arch)-toolchain.cmake $(installroot)/$(arch)/
-
-# ENTRY
 # We use the native cmake to build our cross-compiler, which unfortunately
-# means that we have to build the native toolchain aswell
-make-toolchain-%: install/i386/cmake-$(cmake_ver)/._.install install/%/gcc-$(gcc_ver)/._.install
-	@echo $@ done
+# means that we have to build the native toolchain as well
 
-update-toolchain-i386:
-	(cd /opt/ && $(tar) -cf - $(installlabel)/i386 ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-compiler.tar.gz
+compilergz=sol-$(sys_rel)-$(arch)-compiler.tar.gz
 
-update-toolchain-sparc:
-	(cd /opt/ && $(tar) -cf - $(installlabel)/sparc ) | $(gzip) -c > fetched/sol-$(sys_rel)-sparc-compiler.tar.gz
+update-toolchain:
+	(cd /opt/ && $(tar) -cf - $(installlabel)/$(arch) ) | $(gzip) -c > fetched/$(compilergz)
 
-update-toolchain-both:
+gen-toolchain:
+	$(MAKE) update-toolchain arch=sparc
+	$(MAKE) update-toolchain arch=i386
 	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
 
-update-toolchain: update-toolchain-i386 update-toolchain-sparc update-toolchain-both
+fetched/$(compilergz):
+	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/$(@F)
 
-fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz:
-	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/sol-$(sys_rel)-$(arch)-compiler.tar.gz
-
-$(installroot)/$(arch)/bin/$(target)-gcc: | fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz
-	cat fetched/sol-$(sys_rel)-$(arch)-compiler.tar.gz | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
-
-fetch-toolchain-%: | $(installroot)/%/bin/$(call mytarget,%)-gcc
+fetch-toolchain-$(arch): fetched/$(compilergz)
+	cat $< | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo done $@
 
-# ENTRY
-cmakeenv: $(installroot)/$(arch)/sol-$(sys_rel)-$(arch)-toolchain.cmake 
+make-toolchain-%: install/i386/$(cmake_)/._.install install/%/$(gcc_)/._.install
 	@echo $@ done
 
-# fetch-toolchain-$arch && make-toolchain-$arch
-install-toolchain-$(arch): $(getcompilers)-toolchain-$(arch)
-	$(MAKE) arch=$(arch) cmakeenv
+# getcompilers={fetch,make}
+toolchain: $(getcompilers)-toolchain-$(arch)
 	@echo $@ done
 
-toolchain: install-toolchain-$(arch)
-	@echo $@ done
