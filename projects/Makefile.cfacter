@@ -17,10 +17,8 @@ source/$(cfacter_)/._.preprocess: source/$(cfacter_)/._.checkout
 
 source/$(cfacter_)/._.patch: source/$(cfacter_)/._.checkout source/$(cfacter_)/._.preprocess
 
-build/$(arch)/$(cfacter_)/._.config: source/cfacter/._.patch install/$(arch)/$(cmake_)/._.install
+build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch /$(cmake)
 	(cd $(@D) && env $(cmakepath) $(cmake) $(rootdir)/source/$(cfacter_)) $(t) $@.log
 
-cfacter-$(arch): build/$(arch)/$(cfacter_)/._.make
-
-cfacter: cfacter-$(arch)
+cfacter: build/$(arch)/$(cfacter_)/._.make
 	@echo $@ done
