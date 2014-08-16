@@ -36,9 +36,29 @@ all:
 	@echo "sudo	$(MAKE) prepare -- creates the $(installroot), and gives us complete permissions"
 	@echo "	$(MAKE) arch=$(arch) build"
 	@echo "remove:"
-	@echo "	$(MAKE) clean -- cleans build/ and install/ , does not touch source/"
+	@echo "	$(MAKE) clean -- removes source/ build/ install/"
 	@echo "sudo	$(MAKE) clobber -- removes the $(installroot)"
 
+
+# Project specific makefiles
+# Use the generic as a template for new projects
+include projects/Makefile.generic
+
+# compiler suite
+include projects/Makefile.binutils
+include projects/Makefile.gcc
+include projects/Makefile.cmake
+
+# Dependencies
+include projects/Makefile.boost
+include projects/Makefile.yamlcpp
+include projects/Makefile.openssl
+
+# Our toolchain that uses compiler suite
+include Makefile.toolchain
+
+# CFacter tha tuses dependencies
+include projects/Makefile.cfacter
 
 # ENTRY
 # Clean out our builds
@@ -66,58 +86,34 @@ prepare: prepare-$(sys_rel)
 	mkdir -p $(installroot)
 	chmod 777 $(installroot)
 
-# Project specific makefiles
-# Use the generic as a template for new projects
-include projects/Makefile.generic
-
-# compiler suite
-include projects/Makefile.binutils
-include projects/Makefile.gcc
-include projects/Makefile.cmake
-
-# Dependencies
-include projects/Makefile.boost
-include projects/Makefile.yamlcpp
-include projects/Makefile.openssl
-
-# Our toolchain that uses compiler suite
-include Makefile.toolchain
-
-# CFacter tha tuses dependencies
-include projects/Makefile.cfacter
-
 # ENTRY
 get: $(get_)
 	@echo $@ done
 
+# ENTRY
 checkout: $(checkout_)
 	@echo $@ done
 
-# ENTRY
 # To compile native cfacter, we can just build the native cross-compiler
 # toolchain. However, to build the cross compiled sparc cfacter, we need to
 # build the native toolchain first, getting us the native cmake, and build the
 # cross compiled toolchain, and finally use both together to produce our
 # cross-compiled cfacter
 
-build: build-$(arch)
+# ENTRY
+build:
+	$(MAKE) -e toolchain
+	$(MAKE) -e depends
+	$(MAKE) -e cfacter
 
+# ENTRY
 depends:
 	@echo $@ done
-
-build-sparc:
-	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers) $(s)
-	$(MAKE) arch=sparc toolchain getcompilers=$(getcompilers) $(s)
-	$(MAKE) arch=sparc depends $(s)
-	$(MAKE) arch=sparc cfacter $(s)
-
-build-i386:
-	$(MAKE) arch=i386 toolchain getcompilers=$(getcompilers) $(s)
-	$(MAKE) arch=i386 depends $(s)
-	$(MAKE) arch=i386 cfacter $(s)
 
 $(mydirs): ; /bin/mkdir -p $@
 
 # Asking make not to delete any of our intermediate touch files.
 .PRECIOUS: $(get_) $(checkout_) $(patch_) \
 	         $(config_) $(make_) $(install_)
+
+.PHONY: build

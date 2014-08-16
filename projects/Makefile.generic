@@ -32,7 +32,9 @@ build/$(arch)/%/._.sync:  source/%/._.patch | build/$(arch)/%
 	(cd $(<D) && $(tar) -cf - . ) | (cd $(@D) && $(tar) -xf -)
 	touch $@
 
-# Relatively uncontroversial dependencies.
+# GMake does not honor dependency lines with pattern (%) in them
+# unless it is a make recipe. So we are stuck with having to create
+# them for each individual project using a macro hack.
 define standard_x
 fetched/$(1).tar.gz: | fetched
 source/$(1)/._.checkout: | source/$(1)

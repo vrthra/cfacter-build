@@ -89,7 +89,7 @@ cmake=$(installroot)/i386/bin/cmake
 # unnecessarily)
 
 sysdirs=$(installroot)/$(arch)/sysroot
-mydirs=source build install fetched $(source) $(builds) $(installs) \
+mydirs=source install fetched $(source) $(builds) $(installs) \
 			 build/$(arch)  source/$(arch) \
 			 source/$(arch)/root $(sysdirs) \
 			 source/cfacter build/$(arch)/cfacter
@@ -99,7 +99,7 @@ e:=
 space:=$(e) $(e)
 path=$(prefix)/bin \
 		 $(prefix)/$(target)/bin \
-		 $(installroot)/$(arch)/bin \
+		 $(gccpath)/bin \
 		 /usr/ccs/bin \
 		 /usr/gnu/bin \
 		 /usr/bin \
@@ -128,13 +128,11 @@ cmakepath_=$(gccpath)/bin \
 cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
 
 # Make bash sane.
-SHELL=/bin/bash -e -o pipefail
 # And dont use /bin/sh if you can help it.
-export SHELL
+export SHELL=/bin/bash -e -o pipefail
 
 # redirect config make & make install output to a build.log
 t=2>&1 | tee -a build.log >
 
 # Use this if you dislike redirecting to logs, and would rather roll your own
 #t= && echo
-s=&& echo $$SECONDS

@@ -10,13 +10,15 @@ gen-toolchain:
 	$(MAKE) update-toolchain arch=sparc
 	$(MAKE) update-toolchain arch=i386
 	(cd /opt/ && $(tar) -cf - $(installlabel) ) | $(gzip) -c > fetched/sol-$(sys_rel)-i386-sparc-compilers.tar.gz
+	@echo $@ done
 
 fetched/$(compilergz):
 	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/$(@F)
+	@echo $@ done
 
 fetch-toolchain-$(arch): fetched/$(compilergz)
 	cat $< | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
-	@echo done $@
+	@echo $@ done
 
 make-toolchain-%: install/i386/$(cmake_)/._.install install/%/$(gcc_)/._.install
 	@echo $@ done
