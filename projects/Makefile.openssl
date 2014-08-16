@@ -17,6 +17,7 @@ build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.sync
 			./Configure \
 				--prefix=$(prefix) \
 				--openssldir=$(prefix)/ssl \
+				--libdir=$(target)/lib \
 				shared \
 				$(openssl_target) \
 				zlib-dynamic \
