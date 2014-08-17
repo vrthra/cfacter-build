@@ -126,6 +126,8 @@ cmakepath_=$(gccpath)/bin \
           /usr/perl5/5.8.4/bin
 
 cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
+withtoolchain=-DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake
+cmakeverbose=-DCMAKE_VERBOSE_MAKEFILE=ON
 
 # Make bash sane.
 # And dont use /bin/sh if you can help it.

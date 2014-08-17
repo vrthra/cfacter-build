@@ -12,8 +12,7 @@ fetched/$(yamlcpp_).tar.gz:
 
 build/$(arch)/$(yamlcpp_)/._.config: source/$(yamlcpp_)/._.patch $(cmake)
 	(cd $(@D) && \
-		$(cmake) -DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
-		  -DCMAKE_VERBOSE_MAKEFILE=ON \
+		$(cmake)  $(withtoolchain) $(cmakeverbose) \
 		  -DCMAKE_INSTALL_PREFIX:PATH=$(prefix) \
 		  -DBUILD_SHARED_LIBS=ON \
 		  -DYAML_CPP_BUILD_TOOLS=0 $(rootdir)/source/$(yamlcpp_) \
