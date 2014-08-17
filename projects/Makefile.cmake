@@ -8,8 +8,13 @@ $(eval $(call standard_x,$(cmake_)))
 cmaketoolchain=sol-$(sys_rel)-$(arch)-toolchain.cmake
 .PRECIOUS: $(installroot)/$(arch)/$(cmaketoolchain)
 
-$(installroot)/$(arch)/$(cmaketoolchain): patches/$(cmaketoolchain) | $(installroot)/$(arch)
-	cp $< $@
+$(installroot)/$(arch)/$(cmaketoolchain): patches/sol-VER-ARCH-toolchain.cmake | $(installroot)/$(arch)
+
+	cat $< | sed \
+		-e 's#%VER%#5.$(sys_rel)#g' \
+		-e 's#%ARCH%#$(arch)#g' \
+		-e 's#%TARGET%#$(target)#g' \
+		> $@
 
 build/$(arch)/$(cmake_)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
 

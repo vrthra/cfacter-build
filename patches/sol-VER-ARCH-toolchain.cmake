@@ -1,13 +1,13 @@
 # this one is important
 SET(CMAKE_SYSTEM_NAME SunOS)
 #this one not so much
-SET(CMAKE_SYSTEM_VERSION 5.11)
-SET(CMAKE_SYSTEM_PROCESSOR sparc)
+SET(CMAKE_SYSTEM_VERSION %VER%)
+SET(CMAKE_SYSTEM_PROCESSOR %ARCH%)
 
 # specify the cross compiler
 SET(PL_TOOLS_ROOT /opt/pl-build-tools/${CMAKE_SYSTEM_PROCESSOR})
-SET(CMAKE_C_COMPILER     ${PL_TOOLS_ROOT}/bin/sparc-sun-solaris2.11-gcc)
-SET(CMAKE_CXX_COMPILER   ${PL_TOOLS_ROOT}/bin/sparc-sun-solaris2.11-g++)
+SET(CMAKE_C_COMPILER     ${PL_TOOLS_ROOT}/bin/%TARGET%-gcc)
+SET(CMAKE_CXX_COMPILER   ${PL_TOOLS_ROOT}/bin/%TARGET%-g++)
 
 # where is the target environment
 SET(CMAKE_FIND_ROOT_PATH  ${PL_TOOLS_ROOT})
