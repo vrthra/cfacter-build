@@ -29,6 +29,9 @@ clean-%:
 		build/$(arch)/$*/._.make \
 		install/$(arch)/$*/._.install
 
+clobber-%:
+	rm -rf build/$(arch)/$* source/$*
+
 install-%: install/$(arch)/%/._.install
 	  @echo $@ done
 
