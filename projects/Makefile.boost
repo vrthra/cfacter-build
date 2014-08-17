@@ -36,6 +36,7 @@ install/$(arch)/$(boost_)/._.install: build/$(arch)/$(boost_)/._.make
 		--with-program_options \
 		--with-regex \
 		--with-system \
+		--with-thread \
 		install \
 	) $(t) $@.log
 	touch $@
