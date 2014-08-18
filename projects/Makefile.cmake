@@ -34,7 +34,7 @@ build/i386/$(cmake_)/._.config: source/$(cmake_)/._.patch
 	touch $@
 
 # DUMMY
-install/sparc/$(cmake_)/._.install: $(installroot)/$(arch)/$(cmaketoolchain)
+install/$(arch)/$(cmake_)/._.install: $(installroot)/$(arch)/$(cmaketoolchain)
 	touch $@
 
 # ENTRY
