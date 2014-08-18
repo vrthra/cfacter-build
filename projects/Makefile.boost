@@ -15,7 +15,7 @@ build/$(arch)/$(boost_)/._.checkout: fetched/$(boost_).tar.gz | build/$(arch)
 	touch $@
 
 build/$(arch)/$(boost_)/tools/build/v2/user-config.jam: build/$(arch)/$(boost_)/._.sync
-	echo $(userconfig) > $(@D)/tools/build/v2/user-config.jam
+	echo $(userconfig) > $@
 
 build/$(arch)/$(boost_)/._.config: build/$(arch)/$(boost_)/._.sync build/$(arch)/$(boost_)/tools/build/v2/user-config.jam
 	(cd $(@D)/tools/build/v2 && env $(cmakepath) ./bootstrap.sh ) $(t) $@.log
