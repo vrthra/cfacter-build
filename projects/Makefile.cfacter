@@ -21,7 +21,10 @@ source/$(cfacter_)/._.patch: source/$(cfacter_)/._.checkout source/$(cfacter_)/.
 
 build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch /$(cmake)
 	(cd $(@D) && env $(cmakepath) $(cmake) \
-		cmake -DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib \
+		-DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib \
+		-DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake \
+		-DCMAKE_VERBOSE_MAKEFILE=ON \
+		-DCMAKE_INSTALL_PREFIX=$(prefix) \
 		$(rootdir)/source/$(cfacter_)) $(t) $@.log
 	touch $@
 
