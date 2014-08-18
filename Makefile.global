@@ -97,8 +97,8 @@ mydirs=source install fetched $(source) $(builds) $(installs) \
 # some trickery to use array path elements
 e:=
 space:=$(e) $(e)
-path=$(prefix)/bin \
-		 $(prefix)/$(target)/bin \
+path= $(prefix)/$(target)/bin \
+		 $(prefix)/bin \
 		 $(gccpath)/bin \
 		 /usr/ccs/bin \
 		 /usr/gnu/bin \
