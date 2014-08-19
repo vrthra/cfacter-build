@@ -9,18 +9,6 @@ source/$(cfacter_)/._.checkout: | source/$(cfacter_)
 	$(git) clone git@github.com:puppetlabs/cfacter.git $(@D)
 	touch $@
 
-source/$(cfacter_)/._.preprocess: source/$(cfacter_)/._.checkout
-	(cd $(@D) && perl -pi -e 's#utsname #struct utsname #g' \
-		lib/inc/facter/facts/posix/kernel_resolver.hpp \
-		lib/inc/facter/facts/posix/processor_resolver.hpp \
-		lib/src/facts/posix/kernel_resolver.cc \
-		lib/src/facts/posix/processor_resolver.cc )
-	touch $@
-
-source/$(cfacter_)/._.patch: source/$(cfacter_)/._.checkout source/$(cfacter_)/._.preprocess
-
-
-
 # Horrible hack
 build/$(arch)/$(cfacter_)/._.hack: | build/$(arch)/$(cfacter_) ; touch $@
 build/sparc/$(cfacter_)/._.hack: | build/sparc/$(cfacter_)
