@@ -16,7 +16,7 @@ build/sparc/$(cfacter_)/._.hack: | build/sparc/$(cfacter_)
 	touch $@
 
 build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch $(cmake) build/$(arch)/$(cfacter_)/._.hack
-	(cd $(@D) && $(cmake) $(withtoolchain) $(cmakeverbose) \
+	(cd $(@D) && $(cmakecmd) \
 		-DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib/libcrypto.so \
 		-DCMAKE_INSTALL_PREFIX=$(prefix) \
 		$(rootdir)/source/$(cfacter_)) $(t) $@.log
