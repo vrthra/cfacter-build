@@ -18,6 +18,7 @@ fetched/$(compilergz):
 
 fetch-toolchain-$(arch): fetched/$(compilergz)
 	cat $< | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+	$(MAKE) cmakeenv arch=$(arch)
 	@echo $@ done
 
 make-toolchain-%: install/i386/$(cmake_)/._.install install/%/$(gcc_)/._.install

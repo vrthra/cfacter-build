@@ -39,6 +39,12 @@ install/sparc/$(cmake_)/._.install: $(installroot)/$(arch)/$(cmaketoolchain)
 
 # ENTRY
 cmakeenv: $(installroot)/$(arch)/$(cmaketoolchain)
+	cat patches/sol-VER-ARCH-toolchain.cmake | sed \
+		-e 's#%VER%#5.$(sys_rel)#g' \
+		-e 's#%ARCH%#$(arch)#g' \
+		-e 's#%TARGET%#$(target)#g' \
+		> $<
+
 	@echo $@ done
 
 compiler: cmake
