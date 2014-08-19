@@ -32,6 +32,9 @@ clean-%:
 clobber-%:
 	rm -rf build/$(arch)/$* source/$*
 
+build-%: build/$(arch)/%/._.make
+	  @echo $@ done
+
 install-%: install/$(arch)/%/._.install
 	  @echo $@ done
 
