@@ -45,7 +45,7 @@ solaris_version=2.$(sys_rel)
 # remote repo. Use `gmake getcompilers=make __` to make use of locally
 # compiled suite.
 
-getcompilers:=make
+getcompilers:=fetch
 export getcompilers
 
 # The source/ directory ideally should not contain arch dependent files since

@@ -19,7 +19,12 @@ source/$(cfacter_)/._.preprocess: source/$(cfacter_)/._.checkout
 
 source/$(cfacter_)/._.patch: source/$(cfacter_)/._.checkout source/$(cfacter_)/._.preprocess
 
-build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch /$(cmake)
+# Horrible hack
+build/$(arch)/$(cfacter_)/._.hack: | build/$(arch)/$(cfacter_)
+	ln -s /opt/pl-build-tools/$(arch)/bin/$(target)-ar /opt/pl-build-tools/$(arch)/bin/ar
+	touch $@
+
+build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch $(cmake) build/$(arch)/$(cfacter_)/._.hack
 	(cd $(@D) && $(cmake) $(withtoolchain) $(cmakeverbose) \
 		-DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib/libcrypto.so \
 		-DCMAKE_INSTALL_PREFIX=$(prefix) \
