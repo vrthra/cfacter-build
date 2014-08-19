@@ -81,6 +81,7 @@ git=git
 as=$(prefix)/$(target)/bin/as
 ld=$(prefix)/$(target)/bin/ld
 cmake=$(installroot)/i386/bin/cmake
+cmakecmd=$(cmake) $(withtoolchain) $(cmakeverbose)
 # -----------------------------------------------------------------------------
 # $mydirs, and the make rule make sure that our directories are created before
 # they are needed. To make use of this, add the directory here, and in the
