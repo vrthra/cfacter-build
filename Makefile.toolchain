@@ -22,6 +22,7 @@ fetch-toolchain-$(arch): fetched/$(compilergz)
 	@echo $@ done
 
 make-toolchain-%: install/i386/$(cmake_)/._.install install/%/$(gcc_)/._.install
+	$(MAKE) cmakeenv arch=$(arch)
 	@echo $@ done
 
 # getcompilers={fetch,make}

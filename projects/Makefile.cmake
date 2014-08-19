@@ -8,7 +8,8 @@ $(eval $(call standard_x,$(cmake_)))
 cmaketoolchain=sol-$(sys_rel)-$(arch)-toolchain.cmake
 .PRECIOUS: $(installroot)/$(arch)/$(cmaketoolchain)
 
-$(installroot)/$(arch)/$(cmaketoolchain): patches/sol-VER-ARCH-toolchain.cmake | $(installroot)/$(arch)
+$(installroot)/$(arch)/$(cmaketoolchain): patches/sol-VER-ARCH-toolchain.cmake
+	mkdir -p $(@D)
 	cat $< | sed \
 		-e 's#%VER%#5.$(sys_rel)#g' \
 		-e 's#%ARCH%#$(arch)#g' \
@@ -39,6 +40,7 @@ install/$(arch)/$(cmake_)/._.install: $(installroot)/$(arch)/$(cmaketoolchain)
 
 # ENTRY
 cmakeenv: $(installroot)/$(arch)/$(cmaketoolchain)
+	mkdir -p $(installroot)/$(arch)
 	cat patches/sol-VER-ARCH-toolchain.cmake | sed \
 		-e 's#%VER%#5.$(sys_rel)#g' \
 		-e 's#%ARCH%#$(arch)#g' \
