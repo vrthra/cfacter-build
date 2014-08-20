@@ -1,4 +1,4 @@
-openssl_ver=1.0.0m
+openssl_ver=1.0.0n
 openssl_=openssl-$(openssl_ver)
 projects+=$(openssl_)
 names+=openssl
@@ -10,7 +10,7 @@ openssl_target=solaris-$(if $(filter sparc,$(arch)),sparcv9,x86)-gcc
 fetched/$(openssl_).tar.gz:
 	$(wget) -P $(@D) 'https://www.openssl.org/source/$(openssl_).tar.gz'
 
-build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.sync
+build/$(arch)/$(openssl_)/._.config: build/$(arch)/$(openssl_)/._.sync source/$(openssl_)/._.patch
 	(cd $(@D) && env \
 				LDFLAGS="-L $(prefix)/lib -Wl,-rpath-link, $(prefix)/lib -Wl,-rpath, $(prefix)/lib" \
 				CC=$(prefix)/bin/$(target)-gcc \
