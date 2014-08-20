@@ -10,9 +10,9 @@ source/$(cfacter_)/._.checkout: | source/$(cfacter_)
 	touch $@
 
 # Horrible hack
-build/$(arch)/$(cfacter_)/._.hack: | build/$(arch)/$(cfacter_) ; touch $@
+build/i386/$(cfacter_)/._.hack: | build/$(arch)/$(cfacter_) ; touch $@
 build/sparc/$(cfacter_)/._.hack: | build/sparc/$(cfacter_)
-	ln -s /opt/pl-build-tools/$(arch)/bin/$(target)-ar /opt/pl-build-tools/$(arch)/bin/ar
+	-ln -s /opt/pl-build-tools/$(arch)/bin/$(target)-ar /opt/pl-build-tools/$(arch)/bin/ar
 	touch $@
 
 build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch $(cmake) build/$(arch)/$(cfacter_)/._.hack
