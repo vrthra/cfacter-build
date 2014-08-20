@@ -7,7 +7,7 @@ $(eval $(call standard_x,$(binutils_)))
 
 # config rules for binutils
 build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch
-	(cd $(@D) && $(rootdir)/source/$(binutils_)/configure \
+	(cd $(@D) && env $(nativeenv) $(rootdir)/source/$(binutils_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \
 			$(sysroot) \
@@ -21,4 +21,3 @@ compiler: binutils
 # ENTRY
 binutils: install-$(binutils_)
 	@echo $@ done
-
