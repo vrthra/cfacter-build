@@ -6,21 +6,7 @@ names+=binutils
 $(eval $(call standard_x,$(binutils_)))
 
 # config rules for binutils
-build/i386/$(binutils_)/._.config: source/$(binutils_)/._.patch
-	(cd $(@D) && $(rootdir)/source/$(binutils_)/configure \
-			--target=$(target) \
-			--prefix=$(prefix) \
-			$(sysroot) \
-			--disable-nls \
-			-v \
-	) $(t) $@.log
-	touch $@
-
-# config rules for binutils
-build/sparc/$(binutils_)/._.config: source/$(binutils_)/._.patch
-	export PATH=$(installroot)/i386/bin:$$PATH ; \
-	export CC=$(installroot)/i386/bin/i386-pc-solaris2.11-gcc ; \
-	export CXX=$(installroot)/i386/bin/i386-pc-solaris2.11-g++ ; \
+build/$(arch)/$(binutils_)/._.config: source/$(binutils_)/._.patch
 	(cd $(@D) && $(rootdir)/source/$(binutils_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \

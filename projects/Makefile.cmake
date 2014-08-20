@@ -14,7 +14,6 @@ $(installroot)/$(arch)/$(cmaketoolchain): patches/sol-VER-ARCH-toolchain.cmake
 		-e 's#%VER%#5.$(sys_rel)#g' \
 		-e 's#%ARCH%#$(arch)#g' \
 		-e 's#%TARGET%#$(target)#g' \
-		-e 's#%PREFIX%#$(prefix)#g' \
 		> $@
 
 build/$(arch)/$(cmake_)/._.config: install/$(arch)/gcc-$(gcc_ver)/._.install
@@ -45,7 +44,6 @@ cmakeenv: $(installroot)/$(arch)/$(cmaketoolchain)
 		-e 's#%VER%#5.$(sys_rel)#g' \
 		-e 's#%ARCH%#$(arch)#g' \
 		-e 's#%TARGET%#$(target)#g' \
-		-e 's#%PREFIX%#$(prefix)#g' \
 		> $<
 
 	@echo $@ done

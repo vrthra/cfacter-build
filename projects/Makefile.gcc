@@ -22,25 +22,7 @@ build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 # GCC depends on binutils being already installed.
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
 
-build/i386/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
-	(cd $(@D) && $(rootdir)/source/$(gcc_)/configure \
-			--target=$(target) \
-			--prefix=$(prefix) \
-			$(sysroot) \
-			--disable-nls \
-			--enable-languages=c,c++ \
-			--disable-libgcj \
-			--with-gnu-as \
-			--with-as=$(as) \
-			--with-gnu-ld \
-			--with-ld=$(ld) \
-			-v \
-	) $(t) $@.log
-	touch $@
-
-build/sparc/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
-	export CC=$(installroot)/i386/bin/i386-pc-solaris2.11-gcc ; \
-	export CXX=$(installroot)/i386/bin/i386-pc-solaris2.11-g++ ; \
+build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
 	(cd $(@D) && $(rootdir)/source/$(gcc_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \
