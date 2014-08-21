@@ -51,8 +51,8 @@ export getcompilers
 # The source/ directory ideally should not contain arch dependent files since
 # it is used mostly for extracting sources. On the other hand, our builds have
 # separate directories for each $arch
-builds=$(addprefix build/$(arch)/,$(projects)) 
-installs=$(addprefix install/$(arch)/,$(projects)) 
+builds=$(addprefix build/$(arch)/,$(projects))
+installs=$(addprefix install/$(arch)/,$(projects))
 source=$(addprefix source/,$(projects))
 fetched=$(addprefix fetched/,$(projects))
 
