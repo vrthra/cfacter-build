@@ -6,7 +6,7 @@ names+=cfacter
 $(eval $(call standard_x,$(cfacter_)))
 
 source/$(cfacter_)/._.checkout: | source/$(cfacter_)
-	$(git) clone git@github.com:puppetlabs/cfacter.git $(@D)
+	$(git) clone git@github.com:vrthra/cfacter.git $(@D) && cd $(@D) && git checkout fix/cfact-68/solaris
 	touch $@
 
 # Horrible hack
