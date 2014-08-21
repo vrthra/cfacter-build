@@ -51,8 +51,8 @@ export getcompilers
 # The source/ directory ideally should not contain arch dependent files since
 # it is used mostly for extracting sources. On the other hand, our builds have
 # separate directories for each $arch
-builds=$(addprefix build/$(arch)/,$(projects)) 
-installs=$(addprefix install/$(arch)/,$(projects)) 
+builds=$(addprefix build/$(arch)/,$(projects))
+installs=$(addprefix install/$(arch)/,$(projects))
 source=$(addprefix source/,$(projects))
 fetched=$(addprefix fetched/,$(projects))
 
@@ -129,6 +129,13 @@ cmakepath_=$(gccpath)/bin \
 cmakepath=PATH=$(subst $(space),:,$(cmakepath_))
 withtoolchain=-DCMAKE_TOOLCHAIN_FILE=$(prefix)/sol-$(sys_rel)-$(arch)-toolchain.cmake
 cmakeverbose=-DCMAKE_VERBOSE_MAKEFILE=ON
+
+# When building sparc packages, we want to build the cross compiler with the
+# native compiler we just built, rather than with the system gcc.
+nativepath=$(gccnativepath)/bin:$(PATH)
+nativecc=$(gccnativepath)/bin/$(call mytarget,i386)-gcc
+nativecxx=$(gccnativepath)/bin/$(call mytarget,i386)-g++
+nativeenv=$(if $(filter sparc,$(arch)),PATH=$(nativepath) CC=$(nativecc) CXX=$(nativecxx))
 
 # Make bash sane.
 # And dont use /bin/sh if you can help it.

@@ -23,7 +23,7 @@ build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 build/$(arch)/$(gcc_)/._.config: install/$(arch)/$(binutils_)/._.install
 
 build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
-	(cd $(@D) && $(rootdir)/source/$(gcc_)/configure \
+	(cd $(@D) && env $(nativeenv) $(rootdir)/source/$(gcc_)/configure \
 			--target=$(target) \
 			--prefix=$(prefix) \
 			$(sysroot) \
