@@ -20,7 +20,7 @@ get: fetched/sparc.sysroot.tar.gz
 build/sparc/$(gcc_)/._.config: build/sparc/._.headers
 
 # GCC depends on binutils being already installed.
-build/$(arch)/$(gcc_)/._.config: install/$(arch)/binutils-$(binutils_ver)/._.install
+build/$(arch)/$(gcc_)/._.config: install/$(arch)/$(binutils_)/._.install
 
 build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prereq
 	(cd $(@D) && $(rootdir)/source/$(gcc_)/configure \
