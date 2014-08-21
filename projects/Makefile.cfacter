@@ -15,7 +15,9 @@ build/sparc/$(cfacter_)/._.hack: | build/sparc/$(cfacter_)
 	-ln -s /opt/pl-build-tools/$(arch)/bin/$(target)-ar /opt/pl-build-tools/$(arch)/bin/ar
 	touch $@
 
-build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch $(cmake) build/$(arch)/$(cfacter_)/._.hack
+CFACTER_CFILES=$(shell find source/$(cfacter_)/lib/src -type f -name '*.cc')
+
+build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch $(cmake) build/$(arch)/$(cfacter_)/._.hack $(CFACTER_CFILES)
 	(cd $(@D) && $(cmakecmd) \
 		-DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib/libcrypto.so \
 		-DCMAKE_INSTALL_PREFIX=$(prefix) \
