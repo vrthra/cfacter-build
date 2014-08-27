@@ -17,7 +17,7 @@ fetched/$(compilergz):
 	@echo $@ done
 
 $(cmake): | fetched/$(compilergz)
-	cat $< | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
+	cat $| | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 
 fetch-toolchain-$(arch): $(cmake)
 	@echo $@ done
