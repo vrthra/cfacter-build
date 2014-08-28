@@ -32,8 +32,8 @@ build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prere
 			--disable-libgcj \
 			--with-gnu-as \
 			--with-as=$(as) \
-			--with-gnu-ld \
-			--with-ld=$(ld) \
+			--without-gnu-ld \
+			--with-ld=/usr/ccs/bin/ld \
 			-v \
 	) $(t) $@.log
 	touch $@
