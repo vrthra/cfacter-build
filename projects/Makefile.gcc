@@ -41,5 +41,5 @@ build/$(arch)/$(gcc_)/._.config: source/$(gcc_)/._.patch source/$(gcc_)/._.prere
 compiler: gcc
 
 # ENTRY
-gcc: install-$(gcc_ver)
+gcc: install-$(gcc_)
 	@echo $@ done
