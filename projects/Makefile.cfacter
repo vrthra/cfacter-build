@@ -19,6 +19,7 @@ build/$(arch)/$(cfacter_)/._.config: source/$(cfacter_)/._.patch $(cmake) build/
 	(cd $(@D) && $(cmakecmd) \
 		-DOPENSSL_ROOT=$(prefix)/ssl -DOPENSSL_LIBRARY=$(prefix)/$(target)/lib/libcrypto.so \
 		-DCMAKE_INSTALL_PREFIX=$(prefix) \
+		-DCMAKE_BUILD_TYPE=Debug \
 		$(rootdir)/source/$(cfacter_)) $(t) $@.log
 	touch $@
 
