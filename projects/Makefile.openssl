@@ -47,7 +47,7 @@ build/$(arch)/$(openssl_)/._.make: build/$(arch)/$(openssl_)/._.makedepend
 	touch $@
 
 install/$(arch)/$(openssl_)/._.install: build/$(arch)/$(openssl_)/._.make
-	(cd $(<D) && $(MAKE) SHELL=/bin/bash install ) $(t) $@.log
+	(cd $(<D) && $(MAKE) SHELL=/bin/bash install ; ln -s $(prefix)/$(target)/lib/libcrypto.so.1.0.0 $(prefix)/lib/libcrypto.so.1.0.0 ) $(t) $@.log
 	touch $@
 
 depends: openssl
