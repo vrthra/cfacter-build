@@ -16,10 +16,11 @@ fetched/$(compilergz):
 	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/$(@F)
 	@echo $@ done
 
-$(cmake): | fetched/$(compilergz)
+$(cmake): | fetched/sol-$(sys_rel)-i386-compiler.tar.gz
 	cat $| | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 
-fetch-toolchain-$(arch): $(cmake)
+fetch-toolchain-$(arch): $(cmake) fetched/$(compilergz)
+	cat fetched/$(compilergz) | (cd /opt/ && $(gzip) -dc | $(tar) -xf - )
 	@echo $@ done
 
 make-toolchain-%: install/i386/$(cmake_)/._.install install/%/$(gcc_)/._.install
