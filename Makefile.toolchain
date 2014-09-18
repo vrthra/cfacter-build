@@ -13,7 +13,8 @@ gen-toolchain:
 	@echo $@ done
 
 fetched/$(compilergz):
-	$(wget) -P fetched/ $(toolurl)/$(sys_rel)/$(@F)
+	$(wget) $(toolurl)/$(sys_rel)/$(@F)
+	mv $(@F) fetched/
 	@echo $@ done
 
 $(cmake): | fetched/sol-$(sys_rel)-i386-compiler.tar.gz
